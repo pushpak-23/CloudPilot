@@ -6,16 +6,32 @@ export interface NetworkConfig {
   gateway: string
   shared: boolean
   external: boolean
+  adminStateUp?: boolean
+  providerNetworkType?: string
+  providerPhysicalNetwork?: string
+  providerSegmentationId?: number
+  mtu?: number
 }
 
 export interface CreateNetworkInput {
   name: string
-  subnet: string
-  gateway: string
   shared: boolean
   external: boolean
+  adminStateUp?: boolean
+  providerNetworkType?: string
+  providerPhysicalNetwork?: string
+  providerSegmentationId?: number
+  mtu?: number
+  
+  // Subnet
   subnetName?: string
+  subnet?: string // CIDR
+  gateway?: string // gateway IP
+  noGateway?: boolean
   enableDhcp?: boolean
+  allocationPools?: { start: string; end: string }[]
+  dnsNameservers?: string[]
+  hostRoutes?: { destination: string; nexthop: string }[]
 }
 
 export interface NetworkRouter {
@@ -34,20 +50,23 @@ export interface CreateRouterInput {
   externalNetworkId?: string | null
   attachSubnetId?: string | null
   adminStateUp?: boolean
+  ha?: boolean
+  distributed?: boolean
 }
 
 export interface UpdateNetworkInput {
   name?: string
-  subnet?: string
-  gateway?: string
   shared?: boolean
   external?: boolean
+  adminStateUp?: boolean
 }
 
 export interface UpdateRouterInput {
   name?: string
   adminStateUp?: boolean
   externalNetworkId?: string | null
+  ha?: boolean
+  distributed?: boolean
 }
 
 // Session extraction helpers
@@ -122,6 +141,11 @@ export const networkService = {
           gateway: subInfo ? (subInfo as any).gateway_ip : '-',
           shared: net.shared ?? false,
           external: net['router:external'] ?? false,
+          adminStateUp: net.admin_state_up ?? true,
+          providerNetworkType: net['provider:network_type'] || undefined,
+          providerPhysicalNetwork: net['provider:physical_network'] || undefined,
+          providerSegmentationId: net['provider:segmentation_id'] || undefined,
+          mtu: net.mtu || undefined,
         }
       })
     } catch (err) {
@@ -132,35 +156,71 @@ export const networkService = {
 
   async createNetwork(net: CreateNetworkInput): Promise<NetworkConfig> {
     try {
-      const payload = {
+      const payload: any = {
         network: {
           name: net.name,
           shared: net.shared,
           'router:external': net.external,
+          admin_state_up: net.adminStateUp ?? true,
         },
       }
+      if (net.providerNetworkType) {
+        payload.network['provider:network_type'] = net.providerNetworkType
+      }
+      if (net.providerPhysicalNetwork) {
+        payload.network['provider:physical_network'] = net.providerPhysicalNetwork
+      }
+      if (typeof net.providerSegmentationId === 'number') {
+        payload.network['provider:segmentation_id'] = net.providerSegmentationId
+      }
+      if (typeof net.mtu === 'number') {
+        payload.network.mtu = net.mtu
+      }
+
       const raw = await callProxy('network', '/v2.0/networks', 'POST', payload)
       const networkId =
         raw.network?.id || `net-${Math.random().toString(36).substr(2, 9)}`
+
+      const subnetCidr = net.subnet || '10.0.5.0/24'
+      const subnetGateway = net.noGateway ? null : (net.gateway || '10.0.5.1')
       const subnetName = net.subnetName || `${net.name}-subnet`
 
-      const subnetRaw = await callProxy('network', '/v2.0/subnets', 'POST', {
+      const subnetPayload: any = {
         subnet: {
           name: subnetName,
           network_id: networkId,
           ip_version: 4,
-          cidr: net.subnet,
-          gateway_ip: net.gateway,
+          cidr: subnetCidr,
           enable_dhcp: net.enableDhcp ?? true,
         },
-      })
+      }
+
+      if (subnetGateway !== null) {
+        subnetPayload.subnet.gateway_ip = subnetGateway
+      } else {
+        subnetPayload.subnet.gateway_ip = null
+      }
+
+      if (net.allocationPools && net.allocationPools.length > 0) {
+        subnetPayload.subnet.allocation_pools = net.allocationPools
+      }
+      if (net.dnsNameservers && net.dnsNameservers.length > 0) {
+        subnetPayload.subnet.dns_nameservers = net.dnsNameservers
+      }
+      if (net.hostRoutes && net.hostRoutes.length > 0) {
+        subnetPayload.subnet.host_routes = net.hostRoutes
+      }
+
+      const subnetRaw = await callProxy('network', '/v2.0/subnets', 'POST', subnetPayload)
 
       return {
-        ...net,
         id: networkId,
+        name: raw.network?.name || net.name,
+        shared: raw.network?.shared ?? net.shared,
+        external: raw.network?.['router:external'] ?? net.external,
         subnetId: subnetRaw.subnet?.id || null,
-        subnet: net.subnet,
-        gateway: net.gateway,
+        subnet: subnetRaw.subnet?.cidr || subnetCidr,
+        gateway: subnetRaw.subnet?.gateway_ip || subnetGateway || '-',
       }
     } catch (err) {
       console.error('Failed to create network in Neutron:', err)
@@ -179,6 +239,8 @@ export const networkService = {
         payload.network.shared = changes.shared
       if (typeof changes.external === 'boolean')
         payload.network['router:external'] = changes.external
+      if (typeof changes.adminStateUp === 'boolean')
+        payload.network.admin_state_up = changes.adminStateUp
 
       const raw = await callProxy(
         'network',
@@ -190,9 +252,9 @@ export const networkService = {
       return {
         id: updated.id || networkId,
         name: updated.name || changes.name || 'Unnamed Network',
-        subnet: changes.subnet || '-',
+        subnet: '-',
         subnetId: null,
-        gateway: changes.gateway || '-',
+        gateway: '-',
         shared: updated.shared ?? changes.shared ?? false,
         external: updated['router:external'] ?? changes.external ?? false,
       }
@@ -272,6 +334,13 @@ export const networkService = {
         },
       }
 
+      if (typeof router.ha === 'boolean') {
+        payload.router.ha = router.ha
+      }
+      if (typeof router.distributed === 'boolean') {
+        payload.router.distributed = router.distributed
+      }
+
       if (router.externalNetworkId) {
         payload.router.external_gateway_info = {
           network_id: router.externalNetworkId,
@@ -297,8 +366,8 @@ export const networkService = {
         name: created?.name || router.name,
         status: created?.status || 'ACTIVE',
         adminStateUp: created?.admin_state_up ?? true,
-        distributed: created?.distributed ?? false,
-        ha: created?.ha ?? false,
+        distributed: created?.distributed ?? router.distributed ?? false,
+        ha: created?.ha ?? router.ha ?? false,
         externalNetworkId:
           created?.external_gateway_info?.network_id ||
           router.externalNetworkId ||
@@ -321,6 +390,10 @@ export const networkService = {
       if (typeof changes.name === 'string') payload.router.name = changes.name
       if (typeof changes.adminStateUp === 'boolean')
         payload.router.admin_state_up = changes.adminStateUp
+      if (typeof changes.ha === 'boolean')
+        payload.router.ha = changes.ha
+      if (typeof changes.distributed === 'boolean')
+        payload.router.distributed = changes.distributed
       if (typeof changes.externalNetworkId !== 'undefined') {
         payload.router.external_gateway_info = changes.externalNetworkId
           ? { network_id: changes.externalNetworkId }
@@ -339,8 +412,8 @@ export const networkService = {
         name: updated.name || changes.name || 'Unnamed Router',
         status: updated.status || 'ACTIVE',
         adminStateUp: updated.admin_state_up ?? changes.adminStateUp ?? true,
-        distributed: updated.distributed ?? false,
-        ha: updated.ha ?? false,
+        distributed: updated.distributed ?? changes.distributed ?? false,
+        ha: updated.ha ?? changes.ha ?? false,
         externalNetworkId:
           updated.external_gateway_info?.network_id ||
           changes.externalNetworkId ||

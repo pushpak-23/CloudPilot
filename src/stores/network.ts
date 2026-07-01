@@ -6,6 +6,7 @@ import {
   type CreateRouterInput,
   type UpdateNetworkInput,
   type UpdateRouterInput,
+  type CreateNetworkInput,
 } from '@/services/network.service'
 
 export const useNetworkStore = defineStore('network', {
@@ -47,7 +48,7 @@ export const useNetworkStore = defineStore('network', {
       }
     },
 
-    async createNetwork(net: Omit<NetworkConfig, 'id'>) {
+    async createNetwork(net: CreateNetworkInput) {
       const newNet = await networkService.createNetwork(net)
       this.networks.push(newNet)
     },

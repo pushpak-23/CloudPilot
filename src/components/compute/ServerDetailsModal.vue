@@ -917,10 +917,7 @@
                             </option>
                           </select>
                           <button
-                            @click="
-                              addSgToPort(port.id, selectedSgToAdd[port.id])
-                              selectedSgToAdd[port.id] = ''
-                            "
+                            @click="addSgToPort(port.id, selectedSgToAdd[port.id]); selectedSgToAdd[port.id] = ''"
                             :disabled="!selectedSgToAdd[port.id]"
                             class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                           >

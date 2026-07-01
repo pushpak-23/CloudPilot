@@ -97,7 +97,7 @@
     </div>
 
     <!-- Instances List Table -->
-    <div class="bg-zinc-950/40 border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+    <div class="bg-zinc-950/40 border border-zinc-800 rounded-xl max-h-[80vh] overflow-y-auto shadow-xl">
       <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/10">
         <h2 class="font-semibold text-lg text-white">All Active Instances</h2>
         <div class="flex gap-2">
@@ -115,12 +115,12 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto overflow-visible">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="border-b border-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider bg-zinc-900/40 select-none">
               <th class="p-4 w-12 text-center">
-                <input type="checkbox" v-model="selectAll" class="accent-blue-500 h-4.5 w-4.5 rounded cursor-pointer" />
+                <input type="checkbox" v-model="selectAll" class="h-4 w-4 text-cyan-600 bg-zinc-800 border border-cyan-600 rounded focus:ring-2 focus:ring-cyan-500" />
               </th>
               <th class="p-4">VM Name</th>
               <th class="p-4">Status</th>
@@ -149,7 +149,7 @@
               ]"
             >
               <td class="p-4 text-center">
-                <input type="checkbox" :value="vm.id" v-model="selectedVmIds" class="accent-blue-500 h-4.5 w-4.5 rounded cursor-pointer" />
+                <input type="checkbox" :value="vm.id" v-model="selectedVmIds" class="h-4 w-4 text-cyan-600 bg-zinc-800 border border-cyan-600 rounded focus:ring-2 focus:ring-cyan-500" />
               </td>
               <td class="p-4 font-semibold text-blue-400 hover:text-blue-300 cursor-pointer transition-colors" @click="$emit('open-details', vm.id)">
                 {{ vm.name }}
@@ -189,7 +189,7 @@
                   </button>
                   <button
                     @click.stop="openOperationsDropdown(vm.id)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                    class="text-xs px-2.5 py-1.5 rounded border border-cyan-600 bg-cyan-600 hover:bg-cyan-500 text-white transition-colors flex items-center gap-1 cursor-pointer"
                   >
                     Configure <ChevronDown :size="12" />
                   </button>
@@ -205,7 +205,7 @@
                 <!-- Operations Floating Menu Overlay -->
                 <div
                   v-if="activeOperationsVm === vm.id"
-                  class="absolute right-4 mt-1 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl p-2 z-20 text-left space-y-0.5"
+                  class="fixed right-4 mt-1 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl p-2 z-30 text-left space-y-0.5"
                 >
                   <div class="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase border-b border-zinc-800/80 mb-1 select-none">
                     Hypervisor Lifecycle Actions
