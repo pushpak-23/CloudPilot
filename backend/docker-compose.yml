@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  keystone-mock:
+    image: node:20-alpine
+    container_name: cl-keystone-mock
+    working_dir: /app
+    volumes:
+      - ./keystone-mock:/app
+    command: node server.js
+    ports:
+      - "5000:5000"
+    networks:
+      - cl-network
+
+  api:
+    image: rustlang/rust:nightly
+    container_name: cl-backend-api
+    working_dir: /app
+    network_mode: host
+    volumes:
+      - .:/app
+      - cargo-cache:/usr/local/cargo/registry
+    environment:
+      - OPENSTACK_KEYSTONE_URL=https://192.168.101.10:5000/v3
+      - RUST_LOG=backend=debug,tower_http=debug
+    command: cargo run
+    extra_hosts:
+      - "vip.public.cloud:192.168.103.10"
+      - "vip-public-cloud:192.168.103.10"
+
+volumes:
+  cargo-cache:
+
+networks:
+  cl-network:
+    name: cl-network

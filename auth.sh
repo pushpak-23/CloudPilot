@@ -1,0 +1,11 @@
+export OS_AUTH_URL=https://192.168.101.10:5000
+export OS_PROJECT_ID=46929d797af34508840493091a615a30
+export OS_PROJECT_NAME="infra-analysing"
+export OS_USER_DOMAIN_NAME="infra-services"
+export OS_PROJECT_DOMAIN_ID="33abc5ff1104458eb188f11bdfedb26e"
+export OS_USERNAME="infra-analysing-memb"
+export OS_PASSWORD='esec@P61#ANALYSE'
+export OS_REGION_NAME="RegionOne"
+export OS_INTERFACE=public
+export OS_IDENTITY_API_VERSION=3
+export OS_CACERT=/etc/ssl/certs/ca-certificates.crt
