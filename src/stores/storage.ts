@@ -4,6 +4,7 @@ import { storageService, type Volume } from '@/services/storage.service'
 export const useStorageStore = defineStore('storage', {
   state: () => ({
     volumes: [] as Volume[],
+    volumeTypes: [] as string[],
     loading: false
   }),
 
@@ -44,13 +45,37 @@ export const useStorageStore = defineStore('storage', {
       }
     },
 
+    async loadVolumeTypes() {
+      try {
+        this.volumeTypes = await storageService.getVolumeTypes()
+      } catch (err) {
+        console.error('Failed to load volume types', err)
+      }
+    },
+
     async createVolume(name: string, sizeGb: number, type: string) {
       const newVol = await storageService.createVolume(name, sizeGb, type)
       this.volumes.unshift(newVol)
     },
 
-    deleteVolume(name: string) {
-      this.volumes = this.volumes.filter(v => v.name !== name)
+    async deleteVolume(id: string) {
+      try {
+        await storageService.deleteVolume(id)
+        this.volumes = this.volumes.filter(v => v.id !== id)
+      } catch (err) {
+        console.error(`Failed to delete volume ${id}:`, err)
+        throw err
+      }
+    },
+
+    async extendVolume(id: string, newSizeGb: number) {
+      try {
+        await storageService.extendVolume(id, newSizeGb)
+        this.volumes = await storageService.getVolumes()
+      } catch (err) {
+        console.error(`Failed to extend volume ${id}:`, err)
+        throw err
+      }
     }
   }
 })
