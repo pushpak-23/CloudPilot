@@ -25,12 +25,20 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import AppSidebar from '@/widgets/sidebar/AppSidebar.vue'
 import AppHeader from '@/widgets/header/AppHeader.vue'
 import AppFooter from '@/widgets/footer/AppFooter.vue'
 import GlobalSearchModal from '@/widgets/header/components/GlobalSearchModal.vue'
 import { useLayoutStore } from '@/stores/layout'
+import { useThemeStore } from '@/stores/theme'
 
 const layout = useLayoutStore()
+const themeStore = useThemeStore()
+
+// Apply saved accent theme on app boot
+onMounted(() => {
+  themeStore.initTheme()
+})
 </script>
 

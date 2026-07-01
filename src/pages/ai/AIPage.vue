@@ -1,8 +1,8 @@
 <template>
   <div class="p-8 h-[calc(100vh-6.25rem)] flex flex-col space-y-4">
     <div>
-      <h1 class="text-3xl font-extrabold tracking-tight text-white">AI Co-Pilot</h1>
-      <p class="text-zinc-400 mt-1">Chat-driven cloud automation, diagnostic summaries, and OpenTofu generation.</p>
+      <h1 class="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">AI Co-Pilot</h1>
+      <p class="text-zinc-400 mt-1 max-w-3xl">Chat-driven cloud automation, diagnostic summaries, and OpenTofu generation.</p>
     </div>
 
     <!-- Chat Workspace -->

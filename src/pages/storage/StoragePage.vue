@@ -3,10 +3,10 @@
     <!-- Header -->
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-          <HardDrive class="text-blue-500" :size="32" /> Block Storage Space
+        <h1 class="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent flex items-center gap-3">
+          <HardDrive :style="{ color: 'var(--accent)' }" :size="32" /> Block Storage Space
         </h1>
-        <p class="text-zinc-400 mt-1 max-w-2xl">
+        <p class="text-zinc-400 mt-1 max-w-3xl">
           Provision storage pools, trigger snapshots, and maintain volume backups powered by Cinder block storage.
         </p>
       </div>
@@ -79,8 +79,8 @@
       </div>
       <div class="w-full bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-850 flex p-0.5">
         <div
-          class="bg-linear-to-r from-blue-600 to-indigo-500 h-full rounded-full transition-all duration-1000"
-          :style="{ width: `${Math.min((storageStore.totalAllocatedGb / (10 * 1024)) * 100, 100)}%` }"
+          class="h-full rounded-full transition-all duration-1000"
+          :style="{ width: `${Math.min((storageStore.totalAllocatedGb / (10 * 1024)) * 100, 100)}%`, backgroundColor: 'var(--accent)' }"
         ></div>
       </div>
       <div class="flex items-center justify-between text-[11px] text-zinc-500 font-medium">
@@ -96,7 +96,8 @@
         :key="tab"
         @click="activeTab = tab"
         class="flex-1 py-2 text-center text-xs font-bold uppercase tracking-wider rounded-lg transition-all capitalize cursor-pointer"
-        :class="activeTab === tab ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'"
+        :class="activeTab === tab ? 'text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200'"
+        :style="activeTab === tab ? { backgroundColor: 'var(--accent)' } : {}"
       >
         {{ tab }}
       </button>
@@ -163,25 +164,25 @@
                 <div class="flex items-center justify-end gap-2">
                   <button
                     @click="triggerCreateSnapshot(vol)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table"
                   >
                     Snapshot
                   </button>
                   <button
                     @click="triggerCreateBackup(vol)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table"
                   >
                     Backup
                   </button>
                   <button
                     @click="openDetails(vol)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table"
                   >
                     Manage
                   </button>
                   <button
                     @click="handleDelete(vol)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-red-500/25 bg-red-955/10 text-red-400 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table-danger"
                   >
                     Delete
                   </button>
@@ -242,13 +243,13 @@
                 <div class="flex items-center justify-end gap-2">
                   <button
                     @click="handleRestoreSnapshot(snap)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table"
                   >
                     Restore onto Volume
                   </button>
                   <button
                     @click="handleDeleteSnapshot(snap)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-red-500/25 bg-red-955/10 text-red-400 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table-danger"
                   >
                     Delete
                   </button>
@@ -309,13 +310,13 @@
                 <div class="flex items-center justify-end gap-2">
                   <button
                     @click="triggerRestoreBackup(bk)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table"
                   >
                     Restore Backup
                   </button>
                   <button
                     @click="handleDeleteBackup(bk)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-red-500/25 bg-red-955/10 text-red-400 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table-danger"
                   >
                     Delete
                   </button>

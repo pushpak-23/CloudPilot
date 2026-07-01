@@ -3,8 +3,8 @@
     <!-- Header Section -->
     <div class="flex items-start justify-between gap-4 flex-wrap">
       <div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-          <NetworkIcon class="text-blue-500" :size="32" /> Network Control Plane
+        <h1 class="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent flex items-center gap-3">
+          <NetworkIcon :style="{ color: 'var(--accent)' }" :size="32" /> Network Control Plane
         </h1>
         <p class="text-zinc-400 mt-1 max-w-3xl">
           Manage tenant networks, subnets, routers, and ports. Inspect structured software-defined networking (SDN) topologies.
@@ -14,7 +14,7 @@
       <div class="flex flex-wrap gap-2.5">
         <button
           @click="openCreateNetworkModal"
-          class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4.5 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm shadow-lg shadow-blue-500/15 cursor-pointer"
+          class="btn-primary"
         >
           <span>+</span> Create Network
         </button>
@@ -69,23 +69,23 @@
     </div>
 
     <!-- Main Lists Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
       <div class="space-y-6">
         <!-- Networks Table -->
-        <div class="bg-zinc-955/40 border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
-          <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/10">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg">
+          <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950/20">
             <h2 class="font-semibold text-lg text-white">Networks</h2>
             <input
               v-model="searchQuery"
               placeholder="Filter networks..."
-              class="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm text-white w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder-zinc-500"
+              class="form-input sm:w-64"
             />
           </div>
 
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="border-b border-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider bg-zinc-900/40 select-none">
+                <tr class="border-b border-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider bg-zinc-900/80 select-none sticky top-0 z-10 cursor-pointer">
                   <th class="p-4">Network Name</th>
                   <th class="p-4">Subnet CIDR</th>
                   <th class="p-4">Network Type</th>
@@ -105,50 +105,33 @@
                   </td>
                 </tr>
                 <tr
-                  v-for="net in filteredNetworks"
-                  :key="net.id"
-                  class="hover:bg-zinc-900/30 transition-colors cursor-pointer"
-                  @click="selectAndFocusNetwork(net)"
-                  :class="selectedNetwork?.id === net.id ? 'bg-blue-955/20 border-l-2 border-blue-500 bg-blue-500/5' : ''"
-                >
-                  <td class="p-4 font-semibold text-white">
-                    <div class="flex items-center gap-2">
-                      <span class="w-2.5 h-2.5 rounded-full animate-pulse" :class="net.external ? 'bg-blue-500 shadow-lg shadow-blue-500/50' : 'bg-indigo-400 shadow-lg shadow-indigo-500/50'"></span>
-                      {{ net.name }}
-                    </div>
-                  </td>
-                  <td class="p-4 font-mono text-zinc-300">{{ net.subnet }}</td>
-                  <td class="p-4">
-                    <span class="text-xs uppercase px-2.5 py-0.5 rounded border border-zinc-700 bg-zinc-900 text-zinc-400">
-                      {{ net.providerNetworkType || (net.external ? 'external' : 'local') }}
-                    </span>
-                  </td>
-                  <td class="p-4 font-mono text-zinc-400">
-                    {{ net.providerSegmentationId ?? '-' }}
-                  </td>
-                  <td class="p-4 text-right" @click.stop>
-                    <div class="flex items-center justify-end gap-2">
-                      <button
-                        @click="openDetailPane(net)"
-                        class="px-2.5 py-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs text-zinc-300 transition-colors cursor-pointer"
-                      >
-                        Inspect
+                    v-for="net in filteredNetworks"
+                    :key="net.id"
+                    class="even:bg-zinc-900/20 odd:bg-zinc-900/10 hover:bg-zinc-900/30 transition-colors cursor-pointer"
+                    @click="openDetailPane(net)"
+                    :class="selectedNetwork?.id === net.id ? 'bg-blue-955/20 border-l-2 border-blue-500 bg-blue-500/5' : ''"
+                  >
+                    <td class="p-4 font-semibold text-white">
+                      <button @click="openDetailPane(net)" class="flex items-center gap-2 w-full text-left text-blue-400 hover:text-blue-300">
+                        {{ net.name }}
                       </button>
-                      <button
-                        @click="openEditNetworkModal(net)"
-                        class="px-2.5 py-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs text-zinc-300 transition-colors cursor-pointer"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        @click="handleDeleteNetwork(net)"
-                        class="px-2.5 py-1.5 rounded border border-red-500/20 bg-red-500/5 hover:bg-red-650 hover:text-white text-xs text-red-400 transition-colors cursor-pointer"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                    <td class="p-4 font-mono text-zinc-300">{{ net.subnet }}</td>
+                    <td class="p-4"><span class="text-xs uppercase px-2.5 py-0.5 rounded border border-zinc-700 bg-zinc-900 text-zinc-400">{{ net.providerNetworkType || (net.external ? 'external' : 'local') }}</span></td>
+                    <td class="p-4 font-mono text-zinc-300">{{ net.providerSegmentationId ?? '-' }}</td>
+                    <td class="p-4 text-right" @click.stop>
+                      <div class="flex items-center justify-end gap-2">
+
+                        <button @click="openEditNetworkModal(net)"
+                          class="btn-table"
+                        >Edit</button>
+                        <button @click="handleDeleteNetwork(net)"
+          class="btn-table-danger">
+          Delete
+        </button>
+                      </div>
+                    </td>
+                  </tr>
               </tbody>
             </table>
           </div>
@@ -168,7 +151,10 @@
               <div class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Selected Network</div>
               <div class="text-white font-semibold text-base">{{ selectedNetwork.name }}</div>
               <div class="text-xs text-zinc-400 font-mono mt-1 space-y-1">
-                <div>ID: {{ selectedNetwork.id }}</div>
+                <div class="flex items-center gap-2">
+                  <span>ID: {{ selectedNetwork.id }}</span>
+                  <CopyIcon class="w-4 h-4 cursor-pointer" @click="copyToClipboard(selectedNetwork.id)" />
+                </div>
                 <div>Subnet: {{ selectedNetwork.subnet }}</div>
                 <div>Gateway: {{ selectedNetwork.gateway }}</div>
                 <div>Type: {{ selectedNetwork.providerNetworkType || 'Local' }}</div>
@@ -226,9 +212,10 @@
             <RouteIcon :size="16" class="text-emerald-400" />
             {{ router.name }}
           </div>
-          <div class="text-[10px] text-zinc-500 font-mono mt-0.5">
-            ID: {{ router.id.substring(0, 8) }}...
-          </div>
+          <div class="text-[10px] text-zinc-500 font-mono mt-0.5 flex items-center gap-2">
+  <span>ID: {{ router.id.substring(0, 8) }}...</span>
+  <button @click="copyToClipboard(router.id)" class="px-2 py-1 text-xs text-zinc-400 border border-zinc-700 rounded hover:bg-zinc-800">Copy</button>
+</div>
         </div>
         <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border"
           :class="router.adminStateUp ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5' : 'border-zinc-700 text-zinc-400 bg-zinc-900'">
@@ -246,13 +233,13 @@
       <div class="flex items-center justify-end gap-1.5 pt-2 border-t border-zinc-850" @click.stop>
         <button
           @click="openEditRouterModal(router)"
-          class="px-2.5 py-1 rounded bg-zinc-955 border border-zinc-800 text-[11px] text-zinc-300 hover:bg-zinc-900 transition-colors cursor-pointer"
+          class="btn-table"
         >
           Configure
         </button>
         <button
           @click="handleDeleteRouter(router)"
-          class="px-2.5 py-1 rounded bg-red-955/10 border border-red-500/20 text-[11px] text-red-400 hover:bg-red-655 hover:text-white transition-colors cursor-pointer"
+          class="btn-table-danger"
         >
           Delete
         </button>
@@ -308,6 +295,7 @@
       :ports="selectedNetworkPorts"
       :instances="instances"
       @close="showDetailPane = false"
+      @refresh="onDetailsRefresh"
     />
   </div>
 </template>
@@ -318,6 +306,7 @@ import {
   Loader,
   Network as NetworkIcon,
   Route as RouteIcon,
+  Copy as CopyIcon,
 } from 'lucide-vue-next'
 import { useNetworkStore } from '@/stores/network'
 import { computeService } from '@/services/compute.service'
@@ -385,6 +374,38 @@ function openDetailPane(net: NetworkConfig) {
   selectedDetailNetwork.value = net
   selectedNetworkPorts.value = allNetworkPorts.value[net.id] || []
   showDetailPane.value = true
+  
+  // Also select and focus topology
+  selectedNetwork.value = net
+  initTopologyGraph()
+  nextTick(() => {
+    if (visNetworkInstance) {
+      const nodesToFit = getConnectedNodesList(net.id)
+      visNetworkInstance.fit({
+        nodes: nodesToFit,
+        animation: { duration: 800, easingFunction: 'easeInOutQuad' }
+      })
+    }
+  })
+}
+
+// Helper to copy text to clipboard
+function copyToClipboard(text: string) {
+  if (navigator && navigator.clipboard) {
+    navigator.clipboard.writeText(text).catch(() => {
+      // fallback for older browsers
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed' // avoid scrolling to bottom
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    })
+  }
 }
 
 // Map connected nodes for the sub-graph focus bounds
@@ -980,6 +1001,17 @@ async function onNetworkUpdated() {
 async function onRouterUpdated() {
   showEditRouterModal.value = false
   await refreshAll()
+}
+
+async function onDetailsRefresh() {
+  await refreshAll()
+  if (selectedDetailNetwork.value) {
+    const updated = networkStore.networks.find((n) => n.id === selectedDetailNetwork.value?.id)
+    if (updated) {
+      selectedDetailNetwork.value = updated
+    }
+    selectedNetworkPorts.value = allNetworkPorts.value[selectedDetailNetwork.value.id] || []
+  }
 }
 
 async function handleDeleteNetwork(net: NetworkConfig) {

@@ -240,7 +240,7 @@
         <button
           @click="deleteVolume"
           :disabled="operationLoading"
-          class="px-4 py-2 border border-red-500/25 bg-red-950/10 hover:bg-red-500 hover:text-white text-sm text-red-400 rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          class="px-4 py-2 border border-zinc-700 bg-zinc-800 text-sm text-white rounded-lg hover:bg-zinc-700 hover:text-white transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Delete Volume
         </button>

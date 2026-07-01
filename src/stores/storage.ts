@@ -58,6 +58,10 @@ export const useStorageStore = defineStore('storage', {
     async createVolume(name: string, sizeGb: number, type: string) {
       const newVol = await storageService.createVolume(name, sizeGb, type)
       this.volumes.unshift(newVol)
+      // Refresh after a short delay to get updated status (e.g., Available)
+      setTimeout(() => {
+        this.loadVolumes(true)
+      }, 5000)
     },
 
     async deleteVolume(id: string) {

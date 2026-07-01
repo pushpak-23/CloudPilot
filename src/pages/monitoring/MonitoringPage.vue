@@ -3,14 +3,14 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-white">Monitoring & Metrics</h1>
-        <p class="text-zinc-400 mt-1">Real-time status summaries of cloud nodes, storage pools, and alert triggers.</p>
+        <h1 class="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">Monitoring & Metrics</h1>
+        <p class="text-zinc-400 mt-1 max-w-3xl">Real-time status summaries of cloud nodes, storage pools, and alert triggers.</p>
       </div>
       <div class="flex gap-2">
         <button class="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer">
           Open Grafana Console
         </button>
-        <button class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer">
+        <button class="btn-primary">
           Alerting Rules
         </button>
       </div>
@@ -107,7 +107,7 @@
               <td class="p-4 text-right">
                 <button
                   @click="monitoringStore.acknowledgeAlert(alert.name)"
-                  class="text-xs px-2.5 py-1 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                  class="btn-table"
                 >
                   Acknowledge
                 </button>

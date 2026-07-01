@@ -8,7 +8,7 @@
         >
           Compute Control Plane
         </h1>
-        <p class="text-zinc-400 mt-1">
+        <p class="text-zinc-400 mt-1 max-w-3xl">
           Manage virtual machines, flavors, Glance images, hypervisors, and bulk
           automated deployments.
         </p>
@@ -21,9 +21,10 @@
           :class="[
             'px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer',
             activeTab === tab.value
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10'
+              ? 'text-white shadow-lg'
               : 'bg-zinc-900/60 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900',
           ]"
+          :style="activeTab === tab.value ? { backgroundColor: 'var(--accent)', boxShadow: 'var(--accent-shadow)' } : {}"
         >
           {{ tab.label }}
         </button>

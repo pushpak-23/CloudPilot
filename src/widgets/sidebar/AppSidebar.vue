@@ -9,13 +9,19 @@
     <!-- Sidebar Header -->
     <div class="h-16 flex items-center justify-between px-5 border-b border-zinc-850">
       <div v-if="!layout.sidebarCollapsed" class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+        <div
+          class="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg"
+          :style="{ backgroundColor: themeStore.accentColor, boxShadow: `0 4px 14px -3px ${themeStore.accentColorBorder}` }"
+        >
           <Cloud :size="18" class="text-white" />
         </div>
         <span class="font-bold text-lg text-white tracking-wider">CloudPilot</span>
       </div>
       <div v-else class="w-full flex justify-center">
-        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+        <div
+          class="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg"
+          :style="{ backgroundColor: themeStore.accentColor, boxShadow: `0 4px 14px -3px ${themeStore.accentColorBorder}` }"
+        >
           <Cloud :size="18" class="text-white" />
         </div>
       </div>
@@ -37,17 +43,23 @@
         :class="[
           'flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-all group',
           isRouteActive(item.path)
-            ? 'bg-blue-600/10 text-blue-400 border border-blue-500/25'
+            ? 'border'
             : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 border border-transparent'
         ]"
+        :style="isRouteActive(item.path) ? {
+          backgroundColor: themeStore.accentColorSubtle,
+          color: themeStore.accentColor,
+          borderColor: themeStore.accentColorBorder,
+        } : {}"
       >
         <component
           :is="item.icon"
           :size="18"
           :class="[
             'transition-colors shrink-0',
-            isRouteActive(item.path) ? 'text-blue-400' : 'text-zinc-400 group-hover:text-zinc-300'
+            !isRouteActive(item.path) ? 'text-zinc-400 group-hover:text-zinc-300' : ''
           ]"
+          :style="isRouteActive(item.path) ? { color: themeStore.accentColor } : {}"
         />
 
         <span
@@ -76,7 +88,10 @@
   >
     <div class="h-16 flex items-center justify-between px-5 border-b border-zinc-850">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+        <div
+          class="w-8 h-8 rounded-lg flex items-center justify-center"
+          :style="{ backgroundColor: themeStore.accentColor }"
+        >
           <Cloud :size="18" class="text-white" />
         </div>
         <span class="font-bold text-lg text-white tracking-wider">CloudPilot</span>
@@ -99,17 +114,23 @@
         :class="[
           'flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-all group',
           isRouteActive(item.path)
-            ? 'bg-blue-600/10 text-blue-400 border border-blue-500/25'
+            ? 'border'
             : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 border border-transparent'
         ]"
+        :style="isRouteActive(item.path) ? {
+          backgroundColor: themeStore.accentColorSubtle,
+          color: themeStore.accentColor,
+          borderColor: themeStore.accentColorBorder,
+        } : {}"
       >
         <component
           :is="item.icon"
           :size="18"
           :class="[
             'transition-colors shrink-0',
-            isRouteActive(item.path) ? 'text-blue-400' : 'text-zinc-400 group-hover:text-zinc-300'
+            !isRouteActive(item.path) ? 'text-zinc-400 group-hover:text-zinc-300' : ''
           ]"
+          :style="isRouteActive(item.path) ? { color: themeStore.accentColor } : {}"
         />
         <span>{{ item.title }}</span>
       </RouterLink>
@@ -122,8 +143,10 @@ import { useRoute } from 'vue-router'
 import { PanelLeftClose, PanelLeft, X, Cloud } from 'lucide-vue-next'
 import navigation from '@/shared/navigation'
 import { useLayoutStore } from '@/stores/layout'
+import { useThemeStore } from '@/stores/theme'
 
 const layout = useLayoutStore()
+const themeStore = useThemeStore()
 const route = useRoute()
 
 // Helper to determine if a route is active
@@ -134,4 +157,5 @@ function isRouteActive(path: string): boolean {
   return route.path.startsWith(path)
 }
 </script>
+
 

@@ -24,6 +24,19 @@
   --color-status-danger-border: rgba(239, 68, 68, 0.2);
 }
 
+/* ── Accent Theme Custom Properties ────────────────────────────── */
+:root {
+  --accent-h: 217;
+  --accent-s: 91%;
+  --accent-l: 60%;
+  --accent:        hsl(var(--accent-h), var(--accent-s), var(--accent-l));
+  --accent-hover:  hsl(var(--accent-h), var(--accent-s), 65%);
+  --accent-muted:  hsl(var(--accent-h), var(--accent-s), 20%);
+  --accent-subtle: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.1);
+  --accent-border: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.25);
+  --accent-shadow: 0 10px 15px -3px hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.15);
+}
+
 @utility card-glass {
   background-color: rgba(9, 9, 11, 0.4);
   border: 1px solid #27272a;
@@ -34,7 +47,7 @@
 }
 
 @utility btn-primary {
-  background-color: var(--color-brand-primary);
+  background-color: var(--accent);
   color: #ffffff;
   font-weight: 600;
   padding: 0.625rem 1.125rem;
@@ -44,12 +57,12 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
+  box-shadow: var(--accent-shadow);
   cursor: pointer;
   border: none;
   
   &:hover {
-    background-color: var(--color-brand-primary-hover);
+    background-color: var(--accent-hover);
   }
   
   &:disabled {
@@ -84,6 +97,51 @@
   }
 }
 
+/* ── Table Action Button Variants ──────────────────────────────── */
+@utility btn-table {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+  border: 1px solid #27272a;
+  background-color: #18181b;
+  color: #d4d4d8;
+  transition: all 0.15s;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #27272a;
+    color: #ffffff;
+    border-color: #3f3f46;
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-table-danger {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.05);
+  color: #f87171;
+  transition: all 0.15s;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
 @utility form-input {
   width: 100%;
   background-color: #09090b;
@@ -96,8 +154,8 @@
   transition: all 0.15s;
   
   &:focus {
-    border-color: var(--color-brand-primary);
-    box-shadow: 0 0 0 1px var(--color-brand-primary);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
   }
   
   &::placeholder {
@@ -171,3 +229,4 @@ select, option {
 select:focus {
   outline: none;
 }
+

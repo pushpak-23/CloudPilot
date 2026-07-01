@@ -174,7 +174,7 @@
                   <button
                     v-if="vm.status === 'Active'"
                     @click="computeStore.stopInstance(vm.id)"
-                    class="text-xs p-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table p-1.5"
                     title="Shut Down"
                   >
                     <Square :size="14" />
@@ -182,20 +182,20 @@
                   <button
                     v-if="vm.status === 'Shutoff'"
                     @click="computeStore.startInstance(vm.id)"
-                    class="text-xs p-1.5 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table p-1.5"
                     title="Power On"
                   >
                     <Play :size="14" />
                   </button>
                   <button
                     @click.stop="openOperationsDropdown(vm.id)"
-                    class="text-xs px-2.5 py-1.5 rounded border border-cyan-600 bg-cyan-600 hover:bg-cyan-500 text-white transition-colors flex items-center gap-1 cursor-pointer"
+                    class="btn-table flex items-center gap-1"
                   >
                     Configure <ChevronDown :size="12" />
                   </button>
                   <button
                     @click="computeStore.terminateInstance(vm.id)"
-                    class="text-xs p-1.5 rounded border border-red-500/25 bg-red-950/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                    class="btn-table-danger p-1.5"
                     title="Terminate Instance"
                   >
                     <Trash :size="14" />

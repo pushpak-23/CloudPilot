@@ -1,10 +1,10 @@
 <template>
-  <div class="p-8 space-y-8 max-w-7xl mx-auto">
+  <div class="p-8 space-y-6 max-w-7xl mx-auto">
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
         <h1
-          class="text-3xl md:text-4xl font-extrabold tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent"
+          class="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent"
         >
           Dashboard Overview
         </h1>
@@ -158,8 +158,8 @@
                 class="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-800"
               >
                 <div
-                  class="bg-blue-600 h-2 rounded-full transition-all duration-1000"
-                  :style="{ width: `${monitoringStore.metrics.cpuLoad}%` }"
+                  class="h-2 rounded-full transition-all duration-1000"
+                  :style="{ width: `${monitoringStore.metrics.cpuLoad}%`, backgroundColor: 'var(--accent)' }"
                 ></div>
               </div>
             </div>
@@ -177,9 +177,10 @@
                 class="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-800"
               >
                 <div
-                  class="bg-blue-600 h-2 rounded-full transition-all duration-1000"
+                  class="h-2 rounded-full transition-all duration-1000"
                   :style="{
                     width: `${(monitoringStore.metrics.memoryAllocatedGb / monitoringStore.metrics.memoryTotalGb) * 100}%`,
+                    backgroundColor: 'var(--accent)',
                   }"
                 ></div>
               </div>

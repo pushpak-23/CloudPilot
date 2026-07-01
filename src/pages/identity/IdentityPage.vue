@@ -3,11 +3,11 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-white">Identity & Access (Keystone)</h1>
-        <p class="text-zinc-400 mt-1">Manage project spaces, domain quotas, user accounts, and credentials policy.</p>
+        <h1 class="text-3xl font-extrabold tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">Identity & Access (Keystone)</h1>
+        <p class="text-zinc-400 mt-1 max-w-3xl">Manage project spaces, domain quotas, user accounts, and credentials policy.</p>
       </div>
       <button
-        class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4.5 py-2 rounded-lg transition-colors text-sm shadow-lg shadow-blue-500/10 cursor-pointer"
+        class="btn-primary"
       >
         <span>+</span> Create Project
       </button>
@@ -62,7 +62,7 @@
           <input
             v-model="searchQuery"
             placeholder="Filter projects..."
-            class="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm text-white w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder-zinc-500"
+            class="form-input sm:w-64"
           />
         </div>
 
@@ -96,7 +96,7 @@
                   </span>
                 </td>
                 <td class="p-4 text-right">
-                  <button class="text-xs px-2.5 py-1 rounded border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer">
+                  <button class="btn-table">
                     Edit Quotas
                   </button>
                 </td>
@@ -118,7 +118,7 @@
               <span class="text-white">64 / 128 Cores</span>
             </div>
             <div class="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-850">
-              <div class="bg-blue-600 h-full rounded-full" style="width: 50%"></div>
+              <div class="h-full rounded-full" style="width: 50%; background-color: var(--accent)"></div>
             </div>
             <div class="text-[10px] text-zinc-500 text-right">50% Allocated</div>
           </div>
@@ -130,7 +130,7 @@
               <span class="text-white">128 GB / 256 GB</span>
             </div>
             <div class="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-850">
-              <div class="bg-blue-600 h-full rounded-full" style="width: 50%"></div>
+              <div class="h-full rounded-full" style="width: 50%; background-color: var(--accent)"></div>
             </div>
             <div class="text-[10px] text-zinc-500 text-right">50% Allocated</div>
           </div>

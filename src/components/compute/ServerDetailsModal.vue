@@ -754,7 +754,7 @@
                 <div
                   v-for="port in serverPorts"
                   :key="port.id"
-                  class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg"
+                  class="bg-teal-900 border border-teal-800 rounded-xl overflow-hidden shadow-lg max-h-80 overflow-y-auto ports-scroll"
                 >
                   <div
                     class="px-4 py-3 bg-zinc-800/40 border-b border-zinc-800 flex items-center justify-between gap-2"

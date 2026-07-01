@@ -54,7 +54,8 @@
           <Bell :size="19" />
           <span
             v-if="layout.unreadNotificationsCount > 0"
-            class="absolute top-1 right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-zinc-950 animate-pulse"
+            class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-zinc-950 animate-pulse"
+            :style="{ backgroundColor: themeStore.accentColor }"
           ></span>
         </button>
 
@@ -66,14 +67,15 @@
           <div class="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/40">
             <h3 class="font-semibold text-sm text-white flex items-center gap-2">
               Notifications
-              <span v-if="layout.unreadNotificationsCount > 0" class="text-xs font-normal text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">
+              <span v-if="layout.unreadNotificationsCount > 0" class="text-xs font-normal px-2 py-0.5 rounded-full" :style="{ color: themeStore.accentColor, backgroundColor: themeStore.accentColorSubtle }">
                 {{ layout.unreadNotificationsCount }} new
               </span>
             </h3>
             <button
               v-if="layout.unreadNotificationsCount > 0"
               @click="layout.markAllNotificationsAsRead()"
-              class="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              class="text-xs transition-colors"
+              :style="{ color: themeStore.accentColor }"
             >
               Mark all read
             </button>
@@ -131,7 +133,7 @@
           @click="toggleProfile"
           class="flex items-center gap-2 pl-2 pr-1.5 py-1 hover:bg-zinc-900 rounded-lg transition-colors border border-transparent hover:border-zinc-800"
         >
-          <div class="rounded-full bg-blue-600 w-8 h-8 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-inner select-none">
+          <div class="rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-inner select-none" :style="{ backgroundColor: themeStore.accentColor }">
             {{ authStore.user?.username ? authStore.user.username.charAt(0).toUpperCase() : 'A' }}
           </div>
           <span class="text-sm font-semibold text-zinc-300 hidden md:inline">{{ authStore.user?.username || 'Admin' }}</span>
@@ -160,7 +162,7 @@
               class="w-full flex items-center justify-between rounded-md px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800/60 transition-colors"
             >
               <span>{{ region }}</span>
-              <Check v-if="layout.currentRegion === region" :size="12" class="text-blue-500" />
+              <Check v-if="layout.currentRegion === region" :size="12" :style="{ color: themeStore.accentColor }" />
             </button>
           </div>
 
@@ -178,7 +180,7 @@
               class="w-full flex items-center justify-between rounded-md px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800/60 transition-colors text-left"
             >
               <span class="truncate pr-2">{{ project }}</span>
-              <Check v-if="layout.currentProject === project" :size="12" class="text-blue-500 shrink-0" />
+              <Check v-if="layout.currentProject === project" :size="12" class="shrink-0" :style="{ color: themeStore.accentColor }" />
             </button>
           </div>
 
@@ -211,9 +213,11 @@ import {
 } from 'lucide-vue-next'
 import { useLayoutStore } from '@/stores/layout'
 import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 
 const layout = useLayoutStore()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
 

@@ -279,6 +279,59 @@ export const networkService = {
     }
   },
 
+  async createSubnet(subnet: {
+    networkId: string
+    name: string
+    cidr: string
+    gatewayIp?: string
+    enableDhcp?: boolean
+  }): Promise<any> {
+    try {
+      const payload: any = {
+        subnet: {
+          network_id: subnet.networkId,
+          name: subnet.name,
+          cidr: subnet.cidr,
+          ip_version: 4,
+          enable_dhcp: subnet.enableDhcp ?? true
+        }
+      }
+      if (subnet.gatewayIp) {
+        payload.subnet.gateway_ip = subnet.gatewayIp
+      }
+      const raw = await callProxy('network', '/v2.0/subnets', 'POST', payload)
+      return raw.subnet
+    } catch (err) {
+      console.error('Failed to create subnet in Neutron:', err)
+      throw err
+    }
+  },
+
+  async createPort(port: {
+    networkId: string
+    name: string
+    adminStateUp?: boolean
+    fixedIps?: { ip_address?: string; subnet_id?: string }[]
+  }): Promise<any> {
+    try {
+      const payload: any = {
+        port: {
+          network_id: port.networkId,
+          name: port.name,
+          admin_state_up: port.adminStateUp ?? true
+        }
+      }
+      if (port.fixedIps && port.fixedIps.length > 0) {
+        payload.port.fixed_ips = port.fixedIps
+      }
+      const raw = await callProxy('network', '/v2.0/ports', 'POST', payload)
+      return raw.port
+    } catch (err) {
+      console.error('Failed to create port in Neutron:', err)
+      throw err
+    }
+  },
+
   async getPortsForServer(serverId: string): Promise<any[]> {
     try {
       const raw = await callProxy(
