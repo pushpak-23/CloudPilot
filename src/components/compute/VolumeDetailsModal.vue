@@ -31,8 +31,9 @@
                 {{ volume.status }}
               </span>
             </h2>
-            <p class="text-xs text-zinc-500 font-mono mt-0.5">
-              {{ volume.id }}
+            <p class="text-xs text-zinc-500 font-mono mt-0.5 flex items-center gap-1.5">
+              <span>{{ volume.id }}</span>
+              <CopyButton :text="volume.id" class="p-0.5 border-0 bg-transparent scale-90" />
             </p>
           </div>
         </div>
@@ -275,6 +276,7 @@ import { useStorageStore } from '@/stores/storage'
 import { useComputeStore } from '@/stores/compute'
 import { computeService } from '@/services/compute.service'
 import type { Volume } from '@/services/storage.service'
+import CopyButton from '@/components/CopyButton.vue'
 
 const props = defineProps<{
   show: boolean
@@ -397,7 +399,7 @@ async function deleteVolume() {
 onMounted(() => {
   // Load VMs if empty
   if (computeStore.instances.length === 0) {
-    computeStore.loadAllComputeData(true)
+    computeStore.loadAllComputeData()
   }
 })
 </script>

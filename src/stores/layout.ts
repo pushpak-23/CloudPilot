@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { identityService } from '@/services/identity.service'
 
 export interface Notification {
   id: number
@@ -19,6 +20,7 @@ export const useLayoutStore = defineStore('layout', {
     currentProject: 'Default-Project',
     regions: ['RegionOne', 'RegionTwo', 'RegionThree'],
     projects: ['Default-Project', 'Production-Env', 'Staging-Env', 'Testing-Lab'],
+    contextLoaded: false,
     notifications: [
       {
         id: 1,
@@ -85,9 +87,55 @@ export const useLayoutStore = defineStore('layout', {
     },
     setRegion(region: string) {
       this.currentRegion = region
+      const storedUser = localStorage.getItem('cp_user')
+      if (storedUser) {
+        const user = JSON.parse(storedUser)
+        user.region = region
+        localStorage.setItem('cp_user', JSON.stringify(user))
+        window.location.reload()
+      }
     },
     setProject(project: string) {
       this.currentProject = project
+      const storedUser = localStorage.getItem('cp_user')
+      if (storedUser) {
+        const user = JSON.parse(storedUser)
+        user.project = project
+        localStorage.setItem('cp_user', JSON.stringify(user))
+        window.location.reload()
+      }
+    },
+    async loadContextData() {
+      if (this.contextLoaded) return
+      this.contextLoaded = true
+      try {
+        const projs = await identityService.getProjects()
+        if (projs.length > 0) {
+          this.projects = projs.map(p => p.name)
+        }
+        
+        const regs = await identityService.getRegions()
+        if (regs.length > 0) {
+          this.regions = regs
+        }
+
+        const storedUser = localStorage.getItem('cp_user')
+        if (storedUser) {
+          const user = JSON.parse(storedUser)
+          if (user.project && this.projects.includes(user.project)) {
+            this.currentProject = user.project
+          } else if (this.projects.length > 0 && this.projects[0]) {
+            this.currentProject = this.projects[0]
+          }
+          if (user.region && this.regions.includes(user.region)) {
+            this.currentRegion = user.region
+          } else if (this.regions.length > 0 && this.regions[0]) {
+            this.currentRegion = this.regions[0]
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load real projects/regions context:', err)
+      }
     }
   }
 })

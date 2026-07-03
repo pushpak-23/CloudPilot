@@ -1,0 +1,142 @@
+{
+  "running": true,
+  "startedAt": "2026-07-03T09:26:28.158Z",
+  "workers": {
+    "map": {
+      "runCount": 10,
+      "successCount": 10,
+      "failureCount": 0,
+      "averageDurationMs": 0.9,
+      "isRunning": false,
+      "nextRun": "2026-07-03T11:56:28.205Z",
+      "lastStartedAt": "2026-07-03T11:41:28.203Z",
+      "lastRun": "2026-07-03T11:41:28.204Z"
+    },
+    "audit": {
+      "runCount": 15,
+      "successCount": 15,
+      "failureCount": 0,
+      "averageDurationMs": 825.2666666666667,
+      "isRunning": false,
+      "nextRun": "2026-07-03T11:58:40.570Z",
+      "lastStartedAt": "2026-07-03T11:48:39.776Z",
+      "lastRun": "2026-07-03T11:48:40.570Z"
+    },
+    "optimize": {
+      "runCount": 10,
+      "successCount": 10,
+      "failureCount": 0,
+      "averageDurationMs": 810.3,
+      "isRunning": false,
+      "nextRun": "2026-07-03T12:00:36.281Z",
+      "lastStartedAt": "2026-07-03T11:45:35.504Z",
+      "lastRun": "2026-07-03T11:45:36.280Z"
+    },
+    "consolidate": {
+      "runCount": 5,
+      "successCount": 5,
+      "failureCount": 0,
+      "averageDurationMs": 0.4,
+      "isRunning": false,
+      "nextRun": "2026-07-03T12:02:28.197Z",
+      "lastStartedAt": "2026-07-03T11:32:28.190Z",
+      "lastRun": "2026-07-03T11:32:28.191Z"
+    },
+    "testgaps": {
+      "runCount": 8,
+      "successCount": 8,
+      "failureCount": 0,
+      "averageDurationMs": 792.375,
+      "isRunning": false,
+      "nextRun": "2026-07-03T11:54:33.740Z",
+      "lastStartedAt": "2026-07-03T11:54:33.743Z",
+      "lastRun": "2026-07-03T11:54:34.522Z"
+    },
+    "predict": {
+      "runCount": 0,
+      "successCount": 0,
+      "failureCount": 0,
+      "averageDurationMs": 0,
+      "isRunning": false
+    },
+    "document": {
+      "runCount": 0,
+      "successCount": 0,
+      "failureCount": 0,
+      "averageDurationMs": 0,
+      "isRunning": false
+    }
+  },
+  "config": {
+    "autoStart": false,
+    "logDir": "/home/esec/Projects/Horizon-dashboard/.claude-flow/logs",
+    "stateFile": "/home/esec/Projects/Horizon-dashboard/.claude-flow/daemon-state.json",
+    "maxConcurrent": 2,
+    "workerTimeoutMs": 960000,
+    "resourceThresholds": {
+      "maxCpuLoad": 22.400000000000002,
+      "minFreeMemoryPercent": 10
+    },
+    "ttlMs": 43200000,
+    "idleShutdownMs": 0,
+    "workers": [
+      {
+        "type": "map",
+        "intervalMs": 900000,
+        "offsetMs": 0,
+        "priority": "normal",
+        "description": "Codebase mapping",
+        "enabled": true
+      },
+      {
+        "type": "audit",
+        "intervalMs": 600000,
+        "offsetMs": 120000,
+        "priority": "critical",
+        "description": "Security analysis",
+        "enabled": true
+      },
+      {
+        "type": "optimize",
+        "intervalMs": 900000,
+        "offsetMs": 240000,
+        "priority": "high",
+        "description": "Performance optimization",
+        "enabled": true
+      },
+      {
+        "type": "consolidate",
+        "intervalMs": 1800000,
+        "offsetMs": 360000,
+        "priority": "low",
+        "description": "Memory consolidation",
+        "enabled": true
+      },
+      {
+        "type": "testgaps",
+        "intervalMs": 1200000,
+        "offsetMs": 480000,
+        "priority": "normal",
+        "description": "Test coverage analysis",
+        "enabled": true
+      },
+      {
+        "type": "predict",
+        "intervalMs": 600000,
+        "offsetMs": 0,
+        "priority": "low",
+        "description": "Predictive preloading",
+        "enabled": false
+      },
+      {
+        "type": "document",
+        "intervalMs": 3600000,
+        "offsetMs": 0,
+        "priority": "low",
+        "description": "Auto-documentation",
+        "enabled": false
+      }
+    ]
+  },
+  "savedAt": "2026-07-03T11:54:34.522Z"
+}

@@ -36,9 +36,10 @@ import { useThemeStore } from '@/stores/theme'
 const layout = useLayoutStore()
 const themeStore = useThemeStore()
 
-// Apply saved accent theme on app boot
+// Apply saved accent theme and load real OpenStack context on app boot
 onMounted(() => {
   themeStore.initTheme()
+  layout.loadContextData()
 })
 </script>
 

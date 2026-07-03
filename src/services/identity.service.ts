@@ -40,7 +40,7 @@ async function callKeystoneProxy(path: string, method: string = 'GET', body?: an
   const sanitizedBase = baseUrl.replace(/\/+$/, '')
   const url = `${sanitizedBase}${path}`
 
-  const response = await fetch('http://localhost:8080/api/v1/proxy', {
+  const response = await fetch('/api/v1/proxy', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -86,6 +86,17 @@ export const identityService = {
       } catch {
         return []
       }
+    }
+  },
+
+  async getRegions(): Promise<string[]> {
+    try {
+      const raw = await callKeystoneProxy('/v3/regions')
+      if (!raw.regions || raw.regions.length === 0) return ['RegionOne']
+      return raw.regions.map((r: any) => r.id || r.name).filter(Boolean)
+    } catch (err) {
+      console.warn('Failed to query regions from Keystone:', err)
+      return ['RegionOne']
     }
   }
 }

@@ -10,6 +10,7 @@ export const useComputeStore = defineStore('compute', {
     keypairs: [] as Keypair[],
     availabilityZones: ['nova'] as string[],
     loading: false,
+    lastFetchedAt: null as number | null,
     quotas: {
       instances: { limit: 10, inUse: 0 },
       cores: { limit: 20, inUse: 0 },
@@ -38,11 +39,16 @@ export const useComputeStore = defineStore('compute', {
   },
 
   actions: {
-    async loadAllComputeData(force: boolean = false) {
+    invalidateCache() {
+      this.lastFetchedAt = null
+    },
+
+    async loadAllComputeData() {
       // Load essential compute data (instances, flavors, images) first.
       // Optional data (hypervisors, keypairs, quotas) are fetched individually so failures
       // (e.g., admin‑only endpoints) do not block the UI from showing instances.
-      if (this.instances.length > 0 && !force) return // cache check
+      const CACHE_TTL = 60_000 // 60 seconds
+      if (this.lastFetchedAt && (Date.now() - this.lastFetchedAt < CACHE_TTL)) return
       this.loading = true
       try {
         // Essential data — use allSettled so one failure doesn't block the others
@@ -92,6 +98,7 @@ export const useComputeStore = defineStore('compute', {
           console.warn('Unable to load availability zones:', e)
           this.availabilityZones = ['nova']
         }
+        this.lastFetchedAt = Date.now()
       } catch (err) {
         console.error('Failed to load compute context', err)
       } finally {
@@ -436,9 +443,14 @@ export const useComputeStore = defineStore('compute', {
     },
 
     // Custom Keypair management
-    async addKeypair(name: string) {
-      const key = await computeService.createKeypair(name)
-      this.keypairs.push(key)
+    async addKeypair(name: string, publicKey?: string) {
+      const key = await computeService.createKeypair(name, publicKey)
+      this.keypairs.push({
+        name: key.name,
+        fingerprint: key.fingerprint,
+        publicKey: key.publicKey
+      })
+      return key
     },
 
     deleteKeypair(name: string) {

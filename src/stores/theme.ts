@@ -33,7 +33,7 @@ export const useThemeStore = defineStore('theme', {
 
   getters: {
     currentPreset(state): ThemePreset {
-      return themePresets.find(p => p.name === state.activeTheme) || themePresets[0]
+      return themePresets.find(p => p.name === state.activeTheme) ?? themePresets[0] ?? { name: 'blue', label: 'Blue', h: 217, s: 91, l: 60 }
     },
     /** Returns the accent color as an HSL string for use in inline styles */
     accentColor(): string {

@@ -14,6 +14,8 @@ export const useNetworkStore = defineStore('network', {
     networks: [] as NetworkConfig[],
     routers: [] as NetworkRouter[],
     loading: false,
+    networksLastFetchedAt: null as number | null,
+    routersLastFetchedAt: null as number | null,
   }),
 
   getters: {
@@ -23,11 +25,18 @@ export const useNetworkStore = defineStore('network', {
   },
 
   actions: {
-    async loadNetworks(force: boolean = false) {
-      if (this.networks.length > 0 && !force) return
+    invalidateCache() {
+      this.networksLastFetchedAt = null
+      this.routersLastFetchedAt = null
+    },
+
+    async loadNetworks() {
+      const CACHE_TTL = 60_000
+      if (this.networksLastFetchedAt && (Date.now() - this.networksLastFetchedAt < CACHE_TTL)) return
       this.loading = true
       try {
         this.networks = await networkService.getNetworks()
+        this.networksLastFetchedAt = Date.now()
       } catch (err) {
         console.error('Failed to load networks', err)
       } finally {
@@ -35,11 +44,13 @@ export const useNetworkStore = defineStore('network', {
       }
     },
 
-    async loadRouters(force: boolean = false) {
-      if (this.routers.length > 0 && !force) return
+    async loadRouters() {
+      const CACHE_TTL = 60_000
+      if (this.routersLastFetchedAt && (Date.now() - this.routersLastFetchedAt < CACHE_TTL)) return
       this.loading = true
       try {
         this.routers = await networkService.getRouters()
+        this.routersLastFetchedAt = Date.now()
       } catch (err) {
         console.error('Failed to load routers', err)
         this.routers = []
@@ -51,6 +62,7 @@ export const useNetworkStore = defineStore('network', {
     async createNetwork(net: CreateNetworkInput) {
       const newNet = await networkService.createNetwork(net)
       this.networks.push(newNet)
+      this.invalidateCache()
     },
 
     async updateNetwork(networkId: string, changes: UpdateNetworkInput) {
@@ -60,12 +72,14 @@ export const useNetworkStore = defineStore('network', {
       )
       if (index >= 0)
         this.networks[index] = { ...this.networks[index], ...updated }
+      this.invalidateCache()
       return updated
     },
 
     async createRouter(router: CreateRouterInput) {
       const created = await networkService.createRouter(router)
       this.routers.push(created)
+      this.invalidateCache()
       return created
     },
 
@@ -74,6 +88,7 @@ export const useNetworkStore = defineStore('network', {
       const index = this.routers.findIndex((router) => router.id === routerId)
       if (index >= 0)
         this.routers[index] = { ...this.routers[index], ...updated }
+      this.invalidateCache()
       return updated
     },
   },

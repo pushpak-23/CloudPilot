@@ -34,7 +34,7 @@
             </h2>
             <p class="text-xs text-zinc-500 font-mono mt-0.5 flex items-center gap-1.5">
               ID: {{ network.id }}
-              <CopyIcon class="w-3.5 h-3.5 inline-block cursor-pointer hover:text-zinc-300" @click="copyToClipboard(network.id)" />
+              <CopyButton :text="network.id" class="p-0.5 border-0 bg-transparent" />
             </p>
           </div>
         </div>
@@ -97,11 +97,7 @@
             <button
               v-if="!showAddSubnetForm"
               @click="showAddSubnetForm = true"
-              class="text-xs px-2.5 py-1 rounded border font-semibold bg-transparent transition-all cursor-pointer hover:bg-[var(--accent-subtle)]"
-              :style="{
-                color: themeStore.accentColor,
-                borderColor: themeStore.accentColorBorder
-              }"
+              class="btn-table"
             >
               + Create Subnet
             </button>
@@ -132,7 +128,10 @@
               </div>
               <div>
                 <span class="text-zinc-500 block">Subnet ID</span>
-                <span class="text-zinc-400 font-mono mt-0.5 block truncate" :title="network.subnetId">{{ network.subnetId }}</span>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="text-zinc-400 font-mono block truncate" :title="network.subnetId">{{ network.subnetId }}</span>
+                  <CopyButton v-if="network.subnetId" :text="network.subnetId" class="p-0.5 border-0 bg-transparent" />
+                </div>
               </div>
             </div>
           </div>
@@ -153,11 +152,7 @@
             <button
               v-if="!showAddPortForm"
               @click="showAddPortForm = true"
-              class="text-xs px-2.5 py-1 rounded border font-semibold bg-transparent transition-all cursor-pointer hover:bg-[var(--accent-subtle)]"
-              :style="{
-                color: themeStore.accentColor,
-                borderColor: themeStore.accentColorBorder
-              }"
+              class="btn-table"
             >
               + Create Port
             </button>
@@ -167,7 +162,7 @@
           <CreatePortForm
             :show="showAddPortForm"
             :network-id="network.id"
-            :subnet-id="network.subnetId"
+            :subnet-id="network.subnetId ?? null"
             @saved="() => { showAddPortForm = false; emit('refresh'); }"
             @cancel="showAddPortForm = false"
           />
@@ -180,7 +175,10 @@
               class="bg-zinc-950/40 p-4 rounded-xl border border-zinc-800/80 text-xs text-zinc-300 space-y-2"
             >
               <div class="flex items-center justify-between">
-                <span class="text-white font-semibold text-sm">{{ portLabel(port) }}</span>
+                <span class="text-white font-semibold text-sm flex items-center gap-1.5">
+                  {{ portLabel(port) }}
+                  <CopyButton :text="port.id" class="p-0.5 border-0 bg-transparent" />
+                </span>
                 <span class="px-2 py-0.5 rounded border" :class="portTypeClass(port)">
                   {{ portTypeLabel(port) }}
                 </span>
@@ -204,10 +202,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Network as NetworkIcon, Copy as CopyIcon, Link as LinkIcon, Server as ServerIcon } from 'lucide-vue-next'
-import { copyToClipboard } from '@/composables/useClipboard'
+import { Network as NetworkIcon, Link as LinkIcon, Server as ServerIcon } from 'lucide-vue-next'
 import { useThemeStore } from '@/stores/theme'
 import type { NetworkConfig } from '@/services/network.service'
+import CopyButton from '@/components/CopyButton.vue'
 
 // Reusable Components
 import CreateSubnetForm from './CreateSubnetForm.vue'

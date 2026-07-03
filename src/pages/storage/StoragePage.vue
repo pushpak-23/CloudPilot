@@ -226,7 +226,10 @@
             <tr v-for="snap in filteredSnapshots" :key="snap.id" class="hover:bg-zinc-900/30 transition-colors">
               <td class="p-4 font-semibold text-white">
                 <div>{{ snap.name }}</div>
-                <div class="text-[10px] text-zinc-500 font-mono mt-0.5">ID: {{ snap.id.substring(0, 10) }}...</div>
+                <div class="text-[10px] text-zinc-500 font-mono mt-0.5 flex items-center gap-1.5">
+                  <span>ID: {{ snap.id.substring(0, 10) }}...</span>
+                  <CopyButton :text="snap.id" class="p-0.5 border-0 bg-transparent scale-75" />
+                </div>
               </td>
               <td class="p-4 text-zinc-300 font-mono text-xs">
                 {{ getVolumeName(snap.volumeId) }}
@@ -293,7 +296,10 @@
             <tr v-for="bk in filteredBackups" :key="bk.id" class="hover:bg-zinc-900/30 transition-colors">
               <td class="p-4 font-semibold text-white">
                 <div>{{ bk.name }}</div>
-                <div class="text-[10px] text-zinc-500 font-mono mt-0.5">ID: {{ bk.id.substring(0, 10) }}...</div>
+                <div class="text-[10px] text-zinc-500 font-mono mt-0.5 flex items-center gap-1.5">
+                  <span>ID: {{ bk.id.substring(0, 10) }}...</span>
+                  <CopyButton :text="bk.id" class="p-0.5 border-0 bg-transparent scale-75" />
+                </div>
               </td>
               <td class="p-4 text-zinc-300 font-mono text-xs">
                 {{ getVolumeName(bk.volumeId) }}
@@ -560,6 +566,7 @@ import {
 import { useStorageStore } from '@/stores/storage'
 import { useComputeStore } from '@/stores/compute'
 import VolumeDetailsModal from '@/components/compute/VolumeDetailsModal.vue'
+import CopyButton from '@/components/CopyButton.vue'
 
 const storageStore = useStorageStore()
 const computeStore = useComputeStore()
@@ -634,7 +641,8 @@ function openDetails(vol: any) {
 }
 
 function handleRefresh() {
-  storageStore.loadVolumes(true)
+  storageStore.invalidateCache()
+  storageStore.loadVolumes()
   if (selectedVolume.value) {
     const updated = storageStore.volumes.find(
       (v) => v.id === selectedVolume.value.id

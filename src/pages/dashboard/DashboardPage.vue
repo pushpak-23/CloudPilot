@@ -277,11 +277,11 @@ const identityStore = useIdentityStore()
 const monitoringStore = useMonitoringStore()
 
 onMounted(() => {
-  computeStore.loadAllComputeData(true)
-  storageStore.loadVolumes(true)
-  networkStore.loadNetworks(true)
-  identityStore.loadProjects(true)
-  monitoringStore.loadMonitoringData(true)
+  computeStore.loadAllComputeData()
+  storageStore.loadVolumes()
+  networkStore.loadNetworks()
+  identityStore.loadProjects()
+  monitoringStore.loadMonitoringData()
 
   // Start periodic real metrics refresh
   monitoringStore.startMetricsSimulation()

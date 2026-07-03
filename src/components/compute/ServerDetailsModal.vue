@@ -46,6 +46,7 @@
                 class="bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800"
                 >{{ id }}</span
               >
+              <CopyButton :text="id" class="p-0.5 border-0 bg-transparent" />
             </div>
           </div>
         </div>
@@ -279,13 +280,16 @@
                           >{{ imageInfo.name }}</span
                         >
                       </div>
-                      <div class="flex justify-between">
+                      <div class="flex justify-between items-center">
                         <span class="text-zinc-400">Image ID</span>
-                        <span
-                          class="font-mono text-xs text-zinc-500 truncate max-w-45"
-                          :title="detail.image?.id"
-                          >{{ detail.image?.id || 'N/A' }}</span
-                        >
+                        <div class="flex items-center gap-1">
+                          <span
+                            class="font-mono text-xs text-zinc-500 truncate max-w-40"
+                            :title="detail.image?.id"
+                            >{{ detail.image?.id || 'N/A' }}</span
+                          >
+                          <CopyButton v-if="detail.image?.id" :text="detail.image.id" class="p-0.5 border-0 bg-transparent scale-90" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -311,7 +315,10 @@
                       class="text-zinc-500 font-semibold uppercase tracking-wider text-[10px]"
                       >Project ID</span
                     >
-                    <span class="text-zinc-300">{{ detail.tenant_id }}</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-zinc-300">{{ detail.tenant_id }}</span>
+                      <CopyButton v-if="detail.tenant_id" :text="detail.tenant_id" class="p-0.5 border-0 bg-transparent" />
+                    </div>
                   </div>
                   <div
                     class="bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/80 flex justify-between items-center"
@@ -320,7 +327,10 @@
                       class="text-zinc-500 font-semibold uppercase tracking-wider text-[10px]"
                       >User ID</span
                     >
-                    <span class="text-zinc-300">{{ detail.user_id }}</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-zinc-300">{{ detail.user_id }}</span>
+                      <CopyButton v-if="detail.user_id" :text="detail.user_id" class="p-0.5 border-0 bg-transparent" />
+                    </div>
                   </div>
                 </div>
               </section>
@@ -768,8 +778,9 @@
                           port.mac_address
                         }}</span>
                       </div>
-                      <div class="text-[10px] text-zinc-500 mt-0.5">
-                        Port ID: {{ port.id }}
+                      <div class="text-[10px] text-zinc-500 mt-0.5 flex items-center gap-1.5">
+                        <span>Port ID: {{ port.id }}</span>
+                        <CopyButton :text="port.id" class="p-0.5 border-0 bg-transparent scale-75" />
                       </div>
                     </div>
 
@@ -978,10 +989,11 @@
                         Volume ID
                       </div>
                       <div
-                        class="text-xs text-zinc-300 font-mono truncate max-w-55"
+                        class="text-xs text-zinc-300 font-mono truncate max-w-55 flex items-center gap-1.5"
                         :title="vol.id"
                       >
-                        {{ vol.id }}
+                        <span>{{ vol.id }}</span>
+                        <CopyButton :text="vol.id" class="p-0.5 border-0 bg-transparent scale-75" />
                       </div>
                     </div>
                   </div>
@@ -1512,6 +1524,7 @@ import { useNetworkStore } from '@/stores/network'
 import { useStorageStore } from '@/stores/storage'
 import { networkService } from '@/services/network.service'
 import DistroLogo from './DistroLogo.vue'
+import CopyButton from '@/components/CopyButton.vue'
 
 const computeStore = useComputeStore()
 const networkStore = useNetworkStore()
@@ -2055,7 +2068,8 @@ async function submitRename() {
     await computeService.renameServer(props.id, newServerName.value.trim())
     detail.value.name = newServerName.value.trim()
     showEditNameModal.value = false
-    await computeStore.loadAllComputeData(true)
+    computeStore.invalidateCache()
+    await computeStore.loadAllComputeData()
   } catch (err: any) {
     alert('Failed to rename server: ' + (err.message || err))
   } finally {

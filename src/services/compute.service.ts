@@ -50,6 +50,7 @@ export interface Keypair {
   name: string
   fingerprint: string
   publicKey: string
+  privateKey?: string
 }
 
 export interface ProjectQuotas {
@@ -85,7 +86,7 @@ async function callProxy(serviceType: string, path: string, method: string = 'GE
   const sanitizedBase = baseUrl.replace(/\/+$/, '')
   const url = `${sanitizedBase}${path}`
 
-  const response = await fetch('http://localhost:8080/api/v1/proxy', {
+  const response = await fetch('/api/v1/proxy', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -538,13 +539,18 @@ export const computeService = {
     }
   },
 
-  async createKeypair(name: string): Promise<Keypair> {
+  async createKeypair(name: string, publicKey?: string): Promise<Keypair> {
     try {
-      const raw = await callProxy('compute', '/os-keypairs', 'POST', { keypair: { name } })
+      const payload: any = { name }
+      if (publicKey?.trim()) {
+        payload.public_key = publicKey.trim()
+      }
+      const raw = await callProxy('compute', '/os-keypairs', 'POST', { keypair: payload })
       return {
         name: raw.keypair.name,
         fingerprint: raw.keypair.fingerprint || '',
-        publicKey: raw.keypair.public_key || ''
+        publicKey: raw.keypair.public_key || '',
+        privateKey: raw.keypair.private_key || undefined
       }
     } catch (err) {
       console.error('Failed to create SSH keypair in Nova:', err)

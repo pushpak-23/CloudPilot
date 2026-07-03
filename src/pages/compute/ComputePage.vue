@@ -121,8 +121,8 @@ function openServerDetails(id: string) {
 
 // Initialize data on mount
 onMounted(() => {
-  computeStore.loadAllComputeData(true)
-  networkStore.loadNetworks(true)
-  storageStore.loadVolumes(true)
+  computeStore.loadAllComputeData()
+  networkStore.loadNetworks()
+  storageStore.loadVolumes()
 })
 </script>

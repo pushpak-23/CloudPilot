@@ -34,7 +34,7 @@
                 :class="themeStore.activeTheme === preset.name ? 'ring-2 scale-110' : 'hover:scale-105'"
                 :style="{
                   backgroundColor: `hsl(${preset.h}, ${preset.s}%, ${preset.l}%)`,
-                  ringColor: themeStore.activeTheme === preset.name ? `hsl(${preset.h}, ${preset.s}%, ${preset.l}%)` : undefined,
+                  '--tw-ring-color': themeStore.activeTheme === preset.name ? `hsl(${preset.h}, ${preset.s}%, ${preset.l}%)` : undefined,
                   boxShadow: themeStore.activeTheme === preset.name
                     ? `0 0 0 2px #09090b, 0 0 0 4px hsl(${preset.h}, ${preset.s}%, ${preset.l}%)`
                     : 'none',

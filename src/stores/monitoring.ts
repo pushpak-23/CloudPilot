@@ -12,16 +12,19 @@ export const useMonitoringStore = defineStore('monitoring', {
       activeAlerts: 0
     } as MetricSummary,
     loading: false,
+    lastFetchedAt: null as number | null,
     simulationActive: false
   }),
 
   actions: {
-    async loadMonitoringData(force: boolean = false) {
-      if (this.metrics.memoryTotalGb > 0 && !force) return
+    async loadMonitoringData() {
+      const CACHE_TTL = 60_000
+      if (this.lastFetchedAt && (Date.now() - this.lastFetchedAt < CACHE_TTL)) return
       this.loading = true
       try {
         this.alerts = await monitoringService.getAlerts()
         this.metrics = await monitoringService.getMetrics()
+        this.lastFetchedAt = Date.now()
       } catch (err) {
         console.error('Failed to load monitoring data', err)
       } finally {
@@ -49,7 +52,7 @@ export const useMonitoringStore = defineStore('monitoring', {
         } catch {
           // Silently continue with stale data
         }
-      }, 30000) // Refresh every 30 seconds
+      }, 120_000) // Refresh every 2 minutes (reduced from 30s to cut API load)
     }
   }
 })
