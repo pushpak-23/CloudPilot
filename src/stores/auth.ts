@@ -52,6 +52,23 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('cp_token')
       localStorage.removeItem('cp_user')
+    },
+
+    async switchProject(project: string) {
+      if (!this.user) return
+      this.loading = true
+      try {
+        const session = await authService.switchProject(this.user.username, project)
+        this.token = session.token
+        this.user = session
+        localStorage.setItem('cp_token', session.token)
+        localStorage.setItem('cp_user', JSON.stringify(session))
+      } catch (err) {
+        console.error('Project switch failed', err)
+        throw err
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

@@ -358,6 +358,16 @@ export const networkService = {
     }
   },
 
+  async getPorts(): Promise<any[]> {
+    try {
+      const raw = await callProxy('network', '/v2.0/ports')
+      return raw.ports || []
+    } catch (err) {
+      console.error('Failed to get all ports from Neutron:', err)
+      return []
+    }
+  },
+
   async getRouters(): Promise<NetworkRouter[]> {
     try {
       const raw = await callProxy('network', '/v2.0/routers')

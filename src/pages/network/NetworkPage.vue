@@ -43,6 +43,19 @@
     <!-- Main Lists Section -->
     <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
       <div class="space-y-6">
+        <!-- Bulk Operations Bar -->
+        <div v-if="selectedNetworkIds.length > 0" class="flex items-center justify-between gap-4 p-4 bg-blue-600/10 border border-blue-500/20 rounded-xl animate-in slide-in-from-top-2 duration-200">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-blue-400">{{ selectedNetworkIds.length }} networks selected</span>
+          </div>
+          <button
+            @click="handleBulkDeleteNetworks"
+            class="btn-table-danger py-1.5 px-3 rounded-lg"
+          >
+            Bulk Delete
+          </button>
+        </div>
+
         <!-- Networks Table -->
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg">
           <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950/20">
@@ -58,6 +71,14 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider bg-zinc-900/80 select-none sticky top-0 z-10 cursor-pointer">
+                  <th class="p-4 w-10">
+                    <input
+                      type="checkbox"
+                      :checked="isAllNetworksSelected"
+                      @change="toggleSelectAllNetworks"
+                      class="custom-checkbox"
+                    />
+                  </th>
                   <th class="p-4">Network Name</th>
                   <th class="p-4">Subnet CIDR</th>
                   <th class="p-4">Network Type</th>
@@ -67,12 +88,12 @@
               </thead>
               <tbody class="divide-y divide-zinc-850 text-sm">
                 <tr v-if="networkStore.loading">
-                  <td colspan="5" class="p-8 text-center text-zinc-500">
+                  <td colspan="6" class="p-8 text-center text-zinc-500">
                     <Loader class="animate-spin inline-block mr-2" :size="16" /> Loading Neutron resources...
                   </td>
                 </tr>
                 <tr v-else-if="filteredNetworks.length === 0">
-                  <td colspan="5" class="p-8 text-center text-zinc-500">
+                  <td colspan="6" class="p-8 text-center text-zinc-500">
                     No networks found.
                   </td>
                 </tr>
@@ -83,6 +104,14 @@
                     @click="openDetailPane(net)"
                     :class="selectedNetwork?.id === net.id ? 'bg-blue-955/20 border-l-2 border-blue-500 bg-blue-500/5' : ''"
                   >
+                    <td class="p-4 w-10" @click.stop>
+                      <input
+                        type="checkbox"
+                        :value="net.id"
+                        v-model="selectedNetworkIds"
+                        class="custom-checkbox"
+                      />
+                    </td>
                     <td class="p-4 font-semibold text-white">
                       <button @click="openDetailPane(net)" class="flex items-center gap-2 w-full text-left text-blue-400 hover:text-blue-300">
                         {{ net.name }}
@@ -98,9 +127,10 @@
                           class="btn-table"
                         >Edit</button>
                         <button @click="handleDeleteNetwork(net)"
-          class="btn-table-danger">
-          Delete
-        </button>
+                          class="btn-table-danger"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -301,6 +331,7 @@ const networkStore = useNetworkStore()
 
 // State
 const searchQuery = ref('')
+const selectedNetworkIds = ref<string[]>([])
 const showCreateModal = ref(false)
 const showCreateRouterModal = ref(false)
 const showEditNetworkModal = ref(false)
@@ -438,13 +469,13 @@ async function refreshAll() {
     })(),
   ])
 
-  const portEntries = await Promise.all(
-    networkStore.networks.map(async (network) => [
-      network.id,
-      await networkService.getPortsForNetwork(network.id),
-    ])
-  )
-  allNetworkPorts.value = Object.fromEntries(portEntries)
+  const allPorts = await networkService.getPorts()
+
+  const grouped: Record<string, any[]> = {}
+  networkStore.networks.forEach((net) => {
+    grouped[net.id] = allPorts.filter((p) => p.network_id === net.id)
+  })
+  allNetworkPorts.value = grouped
 
   const mainNet = getMainProjectNetwork()
   if (mainNet) {
@@ -535,6 +566,48 @@ async function handleDeleteNetwork(net: NetworkConfig) {
     } catch (err: any) {
       alert('Failed to delete network: ' + (err.message || err))
     }
+  }
+}
+
+const isAllNetworksSelected = computed(() => {
+  return filteredNetworks.value.length > 0 && selectedNetworkIds.value.length === filteredNetworks.value.length
+})
+
+function toggleSelectAllNetworks() {
+  if (isAllNetworksSelected.value) {
+    selectedNetworkIds.value = []
+  } else {
+    selectedNetworkIds.value = filteredNetworks.value.map(net => net.id)
+  }
+}
+
+async function handleBulkDeleteNetworks() {
+  if (!confirm(`Are you sure you want to delete the ${selectedNetworkIds.value.length} selected networks?`)) return
+  const idsToDelete = [...selectedNetworkIds.value]
+  selectedNetworkIds.value = []
+
+  let successCount = 0
+  let failCount = 0
+  let lastError = ''
+
+  for (const id of idsToDelete) {
+    const net = networkStore.networks.find(n => n.id === id)
+    if (net) {
+      try {
+        await networkService.deleteNetwork(net.id, net.subnetId)
+        successCount++
+      } catch (err: any) {
+        failCount++
+        lastError = err.message || err
+      }
+    }
+  }
+
+  await refreshAll()
+  if (failCount > 0) {
+    alert(`Bulk delete completed. Success: ${successCount}, Failures: ${failCount}. Last error: ${lastError}`)
+  } else {
+    alert(`Successfully deleted ${successCount} networks.`)
   }
 }
 

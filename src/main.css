@@ -230,3 +230,87 @@ select:focus {
   outline: none;
 }
 
+/* ── Custom Theme-Aware Scrollbar Styles ────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.25) #09090b;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.25);
+  border-radius: 9999px;
+  transition: all 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.55);
+}
+
+/* Specific elements like sidebars and drawers scrollbars style */
+.overflow-y-auto, .overflow-auto {
+  scrollbar-width: thin;
+  scrollbar-color: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.25) transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track, .overflow-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Aesthetic Custom Checkbox ───────────────────────────────────── */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 1.5px solid #3f3f46; /* border-zinc-700 */
+  border-radius: 0.3rem;
+  background-color: #09090b; /* bg-zinc-950 */
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  outline: none;
+}
+
+.custom-checkbox:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.15);
+}
+
+.custom-checkbox:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--accent-shadow);
+}
+
+.custom-checkbox::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  transform: scale(0);
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background-color: white;
+  clip-path: polygon(14% 44%, 0 58%, 38% 96%, 100% 16%, 86% 2%, 38% 68%);
+}
+
+.custom-checkbox:checked::before {
+  transform: scale(1);
+}
+
+/* Disable transition on table rows to prevent browser compositor repaint/flashing on hover */
+tr {
+  transition: none !important;
+}
+
+
+

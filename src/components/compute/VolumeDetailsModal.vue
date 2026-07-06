@@ -1,265 +1,222 @@
 <template>
-  <div
-    v-if="show"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm"
-    @click.self="$emit('close')"
-  >
-    <div
-      class="bg-zinc-900 border border-zinc-800 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+  <div>
+    <!-- Backdrop Overlay -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-250 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
     >
-      <!-- Modal Header -->
-      <div
-        class="p-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/10"
-      >
-        <div class="flex items-center gap-3">
-          <div
-            class="p-3 bg-zinc-950 border border-zinc-850 rounded-lg text-blue-400"
-          >
-            <HardDrive :size="22" />
-          </div>
-          <div>
-            <h2 class="text-xl font-bold text-white flex items-center gap-2.5">
-              <span>{{ volume.name }}</span>
-              <span
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase"
-                :class="volume.statusClass"
-              >
-                <span
-                  class="w-1 h-1 rounded-full"
-                  :class="volume.bulletClass"
-                ></span>
-                {{ volume.status }}
-              </span>
-            </h2>
-            <p class="text-xs text-zinc-500 font-mono mt-0.5 flex items-center gap-1.5">
-              <span>{{ volume.id }}</span>
-              <CopyButton :text="volume.id" class="p-0.5 border-0 bg-transparent scale-90" />
-            </p>
-          </div>
-        </div>
-        <button
-          @click="$emit('close')"
-          class="text-zinc-500 hover:text-zinc-300 transition-colors text-lg font-semibold cursor-pointer"
-        >
-          ✕
-        </button>
-      </div>
+      <div v-if="show" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity" @click="$emit('close')"></div>
+    </Transition>
 
-      <!-- Modal Body -->
-      <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-        <!-- Specs Tab Grid -->
-        <div class="grid grid-cols-2 gap-6">
-          <div class="space-y-4">
-            <div>
-              <span
-                class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block"
-                >Size</span
-              >
-              <span class="text-sm font-semibold text-white mt-1 block">{{
-                volume.size
-              }}</span>
+    <!-- Side-Drawer Panel -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out transform"
+      enter-from-class="translate-x-full"
+      enter-to-class="translate-x-0"
+      leave-active-class="transition duration-250 ease-in transform"
+      leave-from-class="translate-x-0"
+      leave-to-class="translate-x-full"
+    >
+      <div
+        v-if="show"
+        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] md:w-[780px] lg:w-[900px] bg-zinc-950/[0.97] border-l border-zinc-800/60 shadow-2xl flex flex-col overflow-hidden backdrop-blur-sm"
+      >
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-zinc-800/60 flex items-center justify-between bg-gradient-to-r from-zinc-900/40 via-zinc-950/20 to-zinc-900/40">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
+              <HardDrive :size="18" />
             </div>
             <div>
-              <span
-                class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block"
-                >Backend Ceph Pool / Type</span
-              >
-              <span class="text-sm font-mono text-zinc-300 mt-1 block">{{
-                volume.type
-              }}</span>
-            </div>
-            <div>
-              <span
-                class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block"
-                >Availability Zone</span
-              >
-              <span class="text-sm text-zinc-400 mt-1 block">{{
-                volume.availabilityZone || 'nova'
-              }}</span>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <span>{{ volume.name }}</span>
+              </h2>
+              <span class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-0.5 block">Volume Properties Inspector</span>
             </div>
           </div>
-          <div class="space-y-4">
-            <div>
-              <span
-                class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block"
-                >Description</span
-              >
-              <span class="text-sm text-zinc-400 mt-1 block italic">{{
-                volume.description || '-'
-              }}</span>
-            </div>
-            <div>
-              <span
-                class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block"
-                >Created At</span
-              >
-              <span class="text-sm font-mono text-zinc-300 mt-1 block">{{
-                formatDate(volume.createdAt)
-              }}</span>
-            </div>
-            <div>
-              <span
-                class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block"
-                >Attached Resource</span
-              >
-              <div class="mt-1 flex items-center gap-1.5">
-                <span
-                  v-if="
-                    volume.attachedTo &&
-                    volume.attachedTo !== 'None (Unattached)'
-                  "
-                  class="text-blue-400 text-sm font-semibold flex items-center gap-1.5"
-                >
-                  <Server :size="12" /> {{ resolvedServerName }}
-                </span>
-                <span v-else class="text-zinc-500 text-sm italic"
-                  >Unattached / Available</span
-                >
+          <button
+            @click="$emit('close')"
+            class="text-zinc-500 hover:text-white transition-all cursor-pointer text-lg outline-none font-bold p-1.5 hover:bg-zinc-800 rounded-lg w-9 h-9 flex items-center justify-center border border-transparent hover:border-zinc-700 bg-transparent"
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Drawer Body -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 text-left">
+          <!-- Two-Column Layout -->
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            
+            <!-- LEFT COLUMN: Operations and Managers (3/5 width) -->
+            <div class="md:col-span-3 space-y-6">
+              
+              <!-- Volume Attachments Manager -->
+              <div class="space-y-3 bg-zinc-900/40 border border-zinc-800/60 p-4 rounded-xl">
+                <h3 class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                  <LinkIcon :size="14" class="text-blue-400" /> Volume Attachment
+                </h3>
+                
+                <div v-if="volume.status === 'Available'" class="space-y-4 pt-1">
+                  <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Select Target Virtual Machine</label>
+                    <select
+                      v-model="targetServerId"
+                      class="w-full bg-zinc-955 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="" disabled>-- Choose a VM Instance --</option>
+                      <option v-for="vm in computeStore.instances" :key="vm.id" :value="vm.id">
+                        {{ vm.name }} (Status: {{ vm.status }})
+                      </option>
+                    </select>
+                  </div>
+                  <button
+                    @click="attachVolume"
+                    :disabled="!targetServerId || operationLoading"
+                    class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0"
+                  >
+                    <Loader v-if="operationLoading" :size="12" class="animate-spin" />
+                    <span>Attach to Instance</span>
+                  </button>
+                </div>
+
+                <div v-else-if="volume.status === 'In-Use'" class="space-y-4 pt-1">
+                  <div class="text-xs space-y-1 text-zinc-400">
+                    <div>Attached Device: <strong class="font-mono text-zinc-200">{{ attachmentDevice }}</strong></div>
+                    <div>Host Instance: <strong class="font-semibold text-zinc-200">{{ resolvedServerName }}</strong></div>
+                  </div>
+                  <button
+                    @click="detachVolume"
+                    :disabled="operationLoading"
+                    class="w-full px-4 py-2 bg-red-955/20 hover:bg-red-900/40 border border-red-500/25 text-red-400 hover:text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Loader v-if="operationLoading" :size="12" class="animate-spin" />
+                    <span>Detach from Instance</span>
+                  </button>
+                </div>
+
+                <div v-else class="text-center text-zinc-500 text-xs italic py-4">
+                  Volume status is {{ volume.status }}. Attachments are locked.
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
 
-        <hr class="border-zinc-800" />
+              <!-- Extend Volume Capacity -->
+              <div class="space-y-3 bg-zinc-900/40 border border-zinc-800/60 p-4 rounded-xl">
+                <h3 class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                  <Maximize :size="14" class="text-blue-400" /> Extend Capacity
+                </h3>
+                <div class="space-y-4 pt-1">
+                  <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase">New Capacity (GB)</label>
+                    <input
+                      type="number"
+                      v-model.number="newSize"
+                      :min="volume.rawSize + 1"
+                      class="w-full bg-zinc-955 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <span class="text-[10px] text-zinc-500 block">Must be larger than current size: {{ volume.size }}</span>
+                  </div>
+                  <button
+                    @click="extendVolume"
+                    :disabled="newSize <= volume.rawSize || operationLoading"
+                    class="w-full px-4 py-2 border border-zinc-850 hover:border-zinc-700 bg-zinc-900 text-zinc-200 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Loader v-if="operationLoading" :size="12" class="animate-spin" />
+                    <span>Extend Storage Size</span>
+                  </button>
+                </div>
+              </div>
 
-        <!-- Attachment Controls -->
-        <div class="space-y-3">
-          <h3
-            class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"
-          >
-            <LinkIcon :size="12" /> Volume Attachments Manager
-          </h3>
-
-          <div
-            v-if="volume.status === 'Available'"
-            class="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-4"
-          >
-            <div class="space-y-1.5 flex-1 w-full">
-              <label class="text-[10px] font-bold text-zinc-500 uppercase"
-                >Select Target Virtual Machine</label
-              >
-              <select
-                v-model="targetServerId"
-                class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="" disabled>-- Choose a VM Instance --</option>
-                <option
-                  v-for="vm in computeStore.instances"
-                  :key="vm.id"
-                  :value="vm.id"
+              <!-- Danger Action -->
+              <div class="p-4 bg-red-955/5 border border-red-500/10 rounded-xl space-y-2">
+                <h4 class="text-xs font-bold text-red-400 uppercase">Danger Zone</h4>
+                <p class="text-[11px] text-zinc-500">Deletes the storage volume block permanently. This cannot be reverted.</p>
+                <button
+                  @click="deleteVolume"
+                  :disabled="operationLoading"
+                  class="px-4 py-2 bg-red-600/10 hover:bg-red-600 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white text-xs font-bold uppercase rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {{ vm.name }} (Status: {{ vm.status }}, IP: {{ vm.ip }})
-                </option>
-              </select>
-            </div>
-            <button
-              @click="attachVolume"
-              :disabled="!targetServerId || operationLoading"
-              class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Loader v-if="operationLoading" :size="12" class="animate-spin" />
-              Attach Volume
-            </button>
-          </div>
+                  Delete Volume
+                </button>
+              </div>
 
-          <div
-            v-else-if="volume.status === 'In-Use'"
-            class="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-          >
-            <div class="text-xs space-y-1 text-zinc-400">
-              <p>
-                Attached Device:
-                <span class="font-mono text-zinc-200">{{
-                  attachmentDevice
-                }}</span>
-              </p>
-              <p>
-                Host Instance:
-                <span class="font-semibold text-zinc-200">{{
-                  resolvedServerName
-                }}</span>
-              </p>
             </div>
-            <button
-              @click="detachVolume"
-              :disabled="operationLoading"
-              class="w-full sm:w-auto px-4 py-2 bg-red-950/20 hover:bg-red-900/40 border border-red-500/25 text-red-400 hover:text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Loader v-if="operationLoading" :size="12" class="animate-spin" />
-              Detach Volume
-            </button>
-          </div>
 
-          <div v-else class="text-center text-zinc-500 text-xs italic py-4">
-            Volume is in {{ volume.status }} state. Attach/detach operations are
-            locked.
+            <!-- RIGHT COLUMN: Volume Metadata Specs (2/5 width) -->
+            <div class="md:col-span-2 space-y-5">
+              
+              <!-- Specs Folder -->
+              <div class="space-y-3">
+                <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-black">Storage Properties</div>
+                <div class="text-xs text-zinc-400 font-mono space-y-3 bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-xl">
+                  
+                  <div class="flex justify-between items-center">
+                    <span class="text-zinc-500 text-[10px] uppercase">Status</span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase" :class="volume.statusClass">
+                      <span class="w-1.5 h-1.5 rounded-full animate-pulse" :class="volume.bulletClass"></span>
+                      {{ volume.status }}
+                    </span>
+                  </div>
+
+                  <div class="border-t border-zinc-800/40 pt-2 flex justify-between items-center">
+                    <span class="text-zinc-500 text-[10px] uppercase">Size</span>
+                    <span class="text-zinc-200 font-bold text-sm">{{ volume.size }}</span>
+                  </div>
+
+                  <div class="border-t border-zinc-800/40 pt-2 flex justify-between items-center">
+                    <span class="text-zinc-500 text-[10px] uppercase">Ceph Pool</span>
+                    <span class="text-zinc-300 font-semibold">{{ volume.type }}</span>
+                  </div>
+
+                  <div class="border-t border-zinc-800/40 pt-2 flex justify-between items-center">
+                    <span class="text-zinc-500 text-[10px] uppercase">Zone</span>
+                    <span class="text-zinc-300">{{ volume.availabilityZone || 'nova' }}</span>
+                  </div>
+
+                  <div class="border-t border-zinc-800/40 pt-2 flex justify-between items-center">
+                    <span class="text-zinc-500 text-[10px] uppercase">Created</span>
+                    <span class="text-zinc-300 text-[11px]">{{ formatDate(volume.createdAt) }}</span>
+                  </div>
+
+                  <div v-if="volume.description" class="border-t border-zinc-800/40 pt-2">
+                    <span class="text-zinc-500 text-[10px] uppercase block">Description</span>
+                    <span class="text-zinc-300 block mt-1 normal-case not-italic text-[11px] leading-relaxed italic">{{ volume.description }}</span>
+                  </div>
+                  
+                  <div class="border-t border-zinc-800/40 pt-2">
+                    <span class="text-zinc-500 text-[10px] uppercase block">Volume ID</span>
+                    <span class="text-zinc-400 block mt-1 text-[10px] break-all">{{ volume.id }}</span>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
           </div>
         </div>
 
-        <hr class="border-zinc-800" />
-
-        <!-- Extend Size Controls -->
-        <div class="space-y-3">
-          <h3
-            class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"
+        <!-- Footer -->
+        <div class="p-6 border-t border-zinc-800 bg-zinc-950/20 flex justify-end gap-3">
+          <button
+            @click="$emit('refresh')"
+            :disabled="operationLoading"
+            class="px-4 py-2 border border-zinc-800 hover:border-zinc-700 text-sm text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed bg-transparent"
           >
-            <Maximize :size="12" /> Extend Volume Capacity
-          </h3>
-          <div
-            class="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-4"
+            Refresh
+          </button>
+          <button
+            @click="$emit('close')"
+            class="px-4 py-2 bg-zinc-800 hover:bg-zinc-755 text-sm text-white rounded-lg transition-all cursor-pointer border-0"
           >
-            <div class="space-y-1.5 flex-1 w-full">
-              <label class="text-[10px] font-bold text-zinc-500 uppercase"
-                >New Storage Capacity (GB)</label
-              >
-              <input
-                type="number"
-                v-model.number="newSize"
-                :min="volume.rawSize + 10"
-                class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              <span class="text-[10px] text-zinc-500 block"
-                >Must be larger than current size: {{ volume.size }}.</span
-              >
-            </div>
-            <button
-              @click="extendVolume"
-              :disabled="newSize <= volume.rawSize || operationLoading"
-              class="w-full sm:w-auto px-4 py-2 border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Loader v-if="operationLoading" :size="12" class="animate-spin" />
-              Extend Size
-            </button>
-          </div>
+            Close Details
+          </button>
         </div>
       </div>
-
-      <!-- Modal Footer -->
-      <div
-        class="p-6 border-t border-zinc-800 bg-zinc-900/10 flex justify-end gap-3"
-      >
-        <button
-          @click="deleteVolume"
-          :disabled="operationLoading"
-          class="px-4 py-2 border border-zinc-700 bg-zinc-800 text-sm text-white rounded-lg hover:bg-zinc-700 hover:text-white transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          Delete Volume
-        </button>
-        <button
-          @click="$emit('refresh')"
-          :disabled="operationLoading"
-          class="px-4 py-2 border border-zinc-800 hover:border-zinc-700 text-sm text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          Refresh
-        </button>
-        <button
-          @click="$emit('close')"
-          class="px-4 py-2 border border-zinc-800 hover:border-zinc-700 text-sm text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer"
-        >
-          Close Details
-        </button>
-      </div>
-    </div>
+    </Transition>
   </div>
 </template>
 

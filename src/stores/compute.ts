@@ -69,39 +69,19 @@ export const useComputeStore = defineStore('compute', {
         if (flavsResult.status === 'rejected') console.error('Flavors load failed:', flavsResult.reason)
         if (imgsResult.status === 'rejected') console.error('Images load failed:', imgsResult.reason)
 
-        // Optional data – handle failures gracefully
-        // Hypervisors
-        try {
-          this.hypervisors = await computeService.getHypervisors()
-        } catch (e) {
-          console.warn('Unable to load hypervisors (may require admin role):', e)
-          this.hypervisors = []
-        }
-        // Keypairs
-        try {
-          this.keypairs = await computeService.getKeypairs()
-        } catch (e) {
-          console.warn('Unable to load keypairs (may require admin role):', e)
-          this.keypairs = []
-        }
-        // Quotas
-        try {
-          this.quotas = await computeService.getQuotas()
-        } catch (e) {
-          console.warn('Unable to load quotas (may require admin role):', e)
-          // Keep default quotas defined in state
-        }
-        // Availability Zones
-        try {
-          this.availabilityZones = await computeService.getAvailabilityZones()
-        } catch (e) {
-          console.warn('Unable to load availability zones:', e)
-          this.availabilityZones = ['nova']
-        }
+        // Mark essential load complete and yield rendering instantly
+        this.loading = false
         this.lastFetchedAt = Date.now()
+
+        // Fetch optional endpoints in background so they do not block instance list rendering
+        Promise.allSettled([
+          computeService.getHypervisors().then(res => this.hypervisors = res).catch(() => this.hypervisors = []),
+          computeService.getKeypairs().then(res => this.keypairs = res).catch(() => this.keypairs = []),
+          computeService.getQuotas().then(res => this.quotas = res).catch(() => {}),
+          computeService.getAvailabilityZones().then(res => this.availabilityZones = res).catch(() => this.availabilityZones = ['nova'])
+        ])
       } catch (err) {
         console.error('Failed to load compute context', err)
-      } finally {
         this.loading = false
       }
     },
@@ -203,7 +183,9 @@ export const useComputeStore = defineStore('compute', {
           if (taskState) {
             // Nova is actively working on it (e.g. powering-off, rebooting, spawning)
             // Keep the UI in Provisioning state
-            this.updateStateHelper(id, 'Provisioning', 'bg-blue-500/10 text-blue-400 border border-blue-500/25', 'bg-blue-500 animate-pulse')
+            this.updateStateHelper(id, 'Provisioning', 'bg-blue-500/10 text-blue-400 border border-blue-500/25', 'bg-blue-500 animate-pulse', {
+              taskState
+            })
           } else {
             // No active task. Update UI to actual state.
             const mapped = mapNovaServer(detail)
@@ -214,7 +196,8 @@ export const useComputeStore = defineStore('compute', {
               flavor: mapped.flavor,
               image: imageName,
               host: mapped.host,
-              age: mapped.age
+              age: mapped.age,
+              taskState: mapped.taskState
             })
             
             // If we reached the target state, or if no target state was specified, we can stop polling.
@@ -544,6 +527,117 @@ export const useComputeStore = defineStore('compute', {
       // Complete deployment session
       await new Promise((resolve) => setTimeout(resolve, 1200))
       this.bulkDeploying = false
+    },
+
+    async cloneInstance(sourceId: string, cloneName: string) {
+      const srcVm = this.instances.find((i) => i.id === sourceId)
+      if (!srcVm) {
+        throw new Error('Source instance not found locally.')
+      }
+
+      const snapName = `clone-snap-${sourceId}-${Date.now()}`
+      const tempId = `vm-clone-placeholder-${Math.random().toString(36).substr(2, 9)}`
+      const placeholderVm: Instance = {
+        id: tempId,
+        name: cloneName,
+        status: 'Provisioning',
+        ip: '-',
+        flavor: srcVm.flavor,
+        image: 'Snapshotting...',
+        age: 'Just now',
+        host: srcVm.host,
+        statusClass: 'bg-blue-500/10 text-blue-400 border border-blue-500/25',
+        bulletClass: 'bg-blue-500 animate-pulse',
+        taskState: 'Requesting snapshot...'
+      }
+      this.instances.unshift(placeholderVm)
+
+      try {
+        this.updateStateHelper(tempId, 'Provisioning', 'bg-blue-500/10 text-blue-400 border border-blue-500/25', 'bg-blue-500 animate-pulse', {
+          taskState: 'Snapshotting source VM...'
+        })
+        await computeService.createImageSnapshot(sourceId, snapName)
+
+        const [sourceDetail, interfaces] = await Promise.all([
+          computeService.getInstanceDetail(sourceId),
+          computeService.getAttachedInterfaces(sourceId)
+        ])
+
+        const originalFlavor = sourceDetail.flavor?.id || sourceDetail.flavor?.name || srcVm.flavor
+        const originalKeypair = sourceDetail.key_name || ''
+        const originalSecGroups = Array.isArray(sourceDetail.security_groups)
+          ? sourceDetail.security_groups.map((sg: any) => sg.name)
+          : []
+        const originalNets = Array.isArray(interfaces)
+          ? interfaces.map((att: any) => att.net_id).filter(Boolean)
+          : []
+
+        this.updateStateHelper(tempId, 'Provisioning', 'bg-blue-500/10 text-blue-400 border border-blue-500/25', 'bg-blue-500 animate-pulse', {
+          taskState: 'Uploading snapshot to Glance...'
+        })
+
+        let snapshotImageId: string | null = null
+        let attempts = 0
+        const maxAttempts = 60
+
+        while (attempts < maxAttempts) {
+          attempts++
+          const img = await computeService.findImageByName(snapName)
+          if (img) {
+            snapshotImageId = img.id
+            if (img.status === 'Active') {
+              break
+            } else if (img.status === 'Saving') {
+              this.updateStateHelper(tempId, 'Provisioning', 'bg-blue-500/10 text-blue-400 border border-blue-500/25', 'bg-blue-500 animate-pulse', {
+                taskState: `Uploading snapshot (${attempts * 4}s)...`
+              })
+            }
+          }
+          await new Promise((resolve) => setTimeout(resolve, 4000))
+        }
+
+        if (!snapshotImageId) {
+          throw new Error('Snapshot image was not found in Glance catalog after timeout.')
+        }
+
+        this.updateStateHelper(tempId, 'Provisioning', 'bg-blue-500/10 text-blue-400 border border-blue-500/25', 'bg-blue-500 animate-pulse', {
+          taskState: 'Provisioning VM from snapshot...'
+        })
+
+        const cloneVm = await computeService.launchInstance(
+          cloneName,
+          originalFlavor,
+          snapshotImageId,
+          originalKeypair,
+          originalNets,
+          originalSecGroups
+        )
+
+        const pIdx = this.instances.findIndex((i) => i.id === tempId)
+        if (pIdx > -1) {
+          this.instances.splice(pIdx, 1)
+        }
+        this.instances.unshift(cloneVm)
+
+        this.pollInstanceStatus(cloneVm.id, 'Active')
+
+        setTimeout(async () => {
+          try {
+            if (snapshotImageId) {
+              await computeService.deleteImage(snapshotImageId)
+              console.log(`[CloudPilot] Cloned successfully. Snapshot ${snapshotImageId} cleaned up from Glance.`)
+            }
+          } catch (e) {
+            console.error('[CloudPilot] Failed to delete temporary snapshot image:', e)
+          }
+        }, 12000)
+
+      } catch (err: any) {
+        console.error('[CloudPilot] VM Clone failed:', err)
+        this.updateStateHelper(tempId, 'Error', 'bg-red-500/10 text-red-400 border border-red-500/20', 'bg-red-500', {
+          taskState: `Clone failed: ${err.message || err}`
+        })
+      }
     }
   }
 })

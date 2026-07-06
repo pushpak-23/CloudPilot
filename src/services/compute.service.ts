@@ -9,6 +9,7 @@ export interface Instance {
   host: string
   statusClass: string
   bulletClass: string
+  taskState?: string
 }
 
 export interface Flavor {
@@ -71,7 +72,7 @@ function getSession() {
 }
 
 // Dynamic proxy routing helper
-async function callProxy(serviceType: string, path: string, method: string = 'GET', body?: any) {
+export async function callProxy(serviceType: string, path: string, method: string = 'GET', body?: any) {
   const { token, user } = getSession()
   
   // Accept standard or nested user object formats
@@ -206,6 +207,7 @@ export function mapNovaServer(server: any): Instance {
     image: server.image?.name || server.image?.id || 'Ubuntu 22.04 LTS',
     age: calculateAge(server.created),
     host: server['OS-EXT-SRV-ATTR:host'] || '-',
+    taskState: server['OS-EXT-STS:task_state'] || undefined,
     ...classes
   }
 }
@@ -327,6 +329,15 @@ export const computeService = {
     }
   },
 
+  async createImageSnapshot(serverId: string, snapshotName: string): Promise<void> {
+    await this.performAction(serverId, {
+      createImage: {
+        name: snapshotName,
+        metadata: {}
+      }
+    })
+  },
+
   async getVncConsole(id: string): Promise<string> {
     try {
       const raw = await callProxy('compute', `/servers/${id}/action`, 'POST', {
@@ -369,6 +380,16 @@ export const computeService = {
     } catch (err) {
       console.error(`Failed to detach interface ${portId} from server ${serverId}:`, err)
       throw err
+    }
+  },
+
+  async getAttachedInterfaces(serverId: string): Promise<any[]> {
+    try {
+      const raw = await callProxy('compute', `/servers/${serverId}/os-interface`)
+      return raw.interfaceAttachments || []
+    } catch (err) {
+      console.error(`Failed to get interfaces for server ${serverId}:`, err)
+      return []
     }
   },
 
@@ -493,6 +514,38 @@ export const computeService = {
       return raw
     } catch (err) {
       console.error(`Failed to patch metadata for image ${imageId}:`, err)
+      throw err
+    }
+  },
+
+  async findImageByName(name: string): Promise<Image | null> {
+    try {
+      const raw = await callProxy('image', `/v2/images?name=${encodeURIComponent(name)}`)
+      const images = raw.images || []
+      if (images.length === 0) return null
+      const img = images[0]
+      return {
+        id: img.id,
+        name: img.name || 'Unnamed Image',
+        diskFormat: img.disk_format || 'raw',
+        containerFormat: img.container_format || 'bare',
+        minDisk: img.min_disk || 0,
+        minRam: img.min_ram || 0,
+        size: img.size ? `${(img.size / 1024 / 1024 / 1024).toFixed(1)} GB` : '0 GB',
+        status: img.status === 'active' ? 'Active' : img.status === 'saving' ? 'Saving' : 'Queued',
+        visibility: img.visibility === 'public' ? 'Public' : 'Private',
+      }
+    } catch (err) {
+      console.error(`Failed to find image by name ${name}:`, err)
+      return null
+    }
+  },
+
+  async deleteImage(imageId: string): Promise<void> {
+    try {
+      await callProxy('image', `/v2/images/${imageId}`, 'DELETE')
+    } catch (err) {
+      console.error(`Failed to delete image ${imageId} from Glance:`, err)
       throw err
     }
   },

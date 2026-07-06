@@ -64,6 +64,7 @@ impl axum::response::IntoResponse for AuthError {
 pub struct AuthenticatedToken {
     pub token_id: String,
     pub project_id: String,
+    pub project_name: String,
     pub roles: Vec<String>,
     pub endpoints: std::collections::HashMap<String, String>,
 }
@@ -195,6 +196,7 @@ impl KeystoneClient {
 
         let roles = body.token.roles.into_iter().map(|r| r.name).collect();
         let project_id = body.token.project.id;
+        let project_name = body.token.project.name;
 
         let mut endpoints = std::collections::HashMap::new();
         for item in body.token.catalog {
@@ -209,6 +211,131 @@ impl KeystoneClient {
         Ok(AuthenticatedToken {
             token_id,
             project_id,
+            project_name,
+            roles,
+            endpoints,
+        })
+    }
+
+    pub async fn scope_token(
+        &self,
+        token_id: &str,
+        project: &str,
+        domain: &str,
+    ) -> Result<AuthenticatedToken, AuthError> {
+        let scope_project = if project.len() == 32 || project.len() == 36 {
+            serde_json::json!({ "id": project })
+        } else {
+            serde_json::json!({
+                "name": project,
+                "domain": { "name": domain }
+            })
+        };
+
+        let auth_payload = serde_json::json!({
+            "auth": {
+                "identity": {
+                    "methods": ["token"],
+                    "token": {
+                        "id": token_id
+                    }
+                },
+                "scope": {
+                    "project": scope_project
+                }
+            }
+        });
+
+        let base = if self.url.ends_with("/v3") || self.url.ends_with("/v3/") {
+            self.url.trim_end_matches('/').to_string()
+        } else {
+            format!("{}/v3", self.url.trim_end_matches('/'))
+        };
+        let target_url = format!("{}/auth/tokens", base);
+        tracing::debug!("POST (scope token) request to: {}", target_url);
+
+        let response = self
+            .client
+            .post(&target_url)
+            .json(&auth_payload)
+            .send()
+            .await
+            .map_err(|e| AuthError::NetworkError(format!("Network connection failed: {}", e)))?;
+
+        let status = response.status();
+        if !status.is_success() {
+            let error_text = response.text().await.unwrap_or_default();
+            return Err(AuthError::KeystoneError(format!(
+                "Keystone token scoping failed (HTTP {}): {}",
+                status, error_text
+            )));
+        }
+
+        let token_id = response
+            .headers()
+            .get("X-Subject-Token")
+            .and_then(|h| h.to_str().ok())
+            .map(|s| s.to_string())
+            .ok_or_else(|| AuthError::KeystoneError("Missing X-Subject-Token header in response".to_string()))?;
+
+        #[derive(Deserialize, Debug)]
+        struct KeystoneResponse {
+            token: TokenDetail,
+        }
+        #[derive(Deserialize, Debug)]
+        struct TokenDetail {
+            roles: Vec<RoleDetail>,
+            project: ProjectDetail,
+            catalog: Option<Vec<CatalogItem>>,
+        }
+        #[derive(Deserialize, Debug)]
+        struct ProjectDetail {
+            id: String,
+            name: String,
+        }
+        #[derive(Deserialize, Debug)]
+        struct CatalogItem {
+            #[serde(rename = "type")]
+            service_type: String,
+            endpoints: Vec<EndpointItem>,
+        }
+        #[derive(Deserialize, Debug)]
+        struct EndpointItem {
+            interface: String,
+            url: String,
+        }
+        #[derive(Deserialize, Debug)]
+        struct RoleDetail {
+            name: String,
+        }
+
+        let body: KeystoneResponse = response
+            .json()
+            .await
+            .map_err(|e| AuthError::KeystoneError(format!("Failed to parse token response body: {}", e)))?;
+
+        let roles = body.token.roles.into_iter().map(|r| r.name).collect();
+        let project_id = body.token.project.id;
+        let project_name = body.token.project.name;
+
+        let mut endpoints = std::collections::HashMap::new();
+        if let Some(catalog) = body.token.catalog {
+            for item in catalog {
+                for ep in item.endpoints {
+                    if ep.interface == "public" {
+                        endpoints.insert(item.service_type.clone(), ep.url.clone());
+                        break;
+                    }
+                }
+            }
+        }
+
+        tracing::info!("Scope token succeeded. Token ID: {}, Project ID: {}, Project Name: {}, Endpoints: {:?}", token_id, project_id, project_name, endpoints);
+
+        Ok(AuthenticatedToken {
+            token_id,
+            project_id,
+            project_name,
             roles,
             endpoints,
         })

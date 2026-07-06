@@ -35,6 +35,7 @@ async fn main() {
     let app = Router::new()
         .route("/api/v1/health", get(health_handler))
         .route("/api/v1/auth/login", post(login_handler))
+        .route("/api/v1/auth/switch-project", post(switch_project_handler))
         .route("/api/v1/proxy", post(proxy_handler))
         .layer(cors)
         .with_state(config);
@@ -150,3 +151,49 @@ async fn proxy_handler(
 
     Ok(Json(response_json))
 }
+
+#[derive(serde::Deserialize, Debug)]
+pub struct SwitchProjectRequest {
+    pub username: String,
+    pub project: String,
+    pub domain: String,
+    pub auth_url: Option<String>,
+    pub ca_cert: Option<String>,
+}
+
+async fn switch_project_handler(
+    axum::extract::State(config): axum::extract::State<config::Config>,
+    headers: axum::http::HeaderMap,
+    Json(payload): Json<SwitchProjectRequest>,
+) -> Result<Json<keystone::LoginResponse>, keystone::AuthError> {
+    tracing::info!("Switching project to {} for user: {}", payload.project, payload.username);
+    
+    // Get X-Auth-Token from headers
+    let current_token = headers
+        .get("X-Auth-Token")
+        .and_then(|h| h.to_str().ok())
+        .ok_or_else(|| keystone::AuthError::KeystoneError("Missing X-Auth-Token header".to_string()))?;
+
+    let keystone_url = payload
+        .auth_url
+        .as_deref()
+        .unwrap_or(&config.keystone_url);
+
+    let client = keystone::KeystoneClient::new(keystone_url, payload.ca_cert.as_deref());
+    let token = client
+        .scope_token(current_token, &payload.project, &payload.domain)
+        .await?;
+
+    Ok(Json(keystone::LoginResponse {
+        success: true,
+        token: token.token_id,
+        user: keystone::UserSession {
+            username: payload.username,
+            project: token.project_name,
+            project_id: token.project_id,
+            roles: token.roles,
+            endpoints: token.endpoints,
+        },
+    }))
+}
+

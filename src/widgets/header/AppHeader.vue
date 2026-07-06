@@ -1,6 +1,6 @@
 <template>
   <header
-    class="h-16 border-b border-zinc-800 flex items-center justify-between px-4 md:px-8 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20"
+    class="h-14 border-b border-zinc-800/50 flex items-center justify-between px-4 md:px-8 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-20 shadow-[0_1px_3px_0_rgba(0,0,0,0.3)]"
   >
     <!-- Left Section: Mobile Toggle & Breadcrumbs -->
     <div class="flex items-center gap-4">

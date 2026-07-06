@@ -73,6 +73,18 @@ const router = createRouter({
           }
         },
         {
+          path: 'orchestration',
+          name: 'orchestration',
+          component: () => import('../pages/orchestration/OrchestrationPage.vue'),
+          meta: {
+            title: 'Orchestration',
+            breadcrumbs: [
+              { text: 'Automation', path: '/' },
+              { text: 'Orchestration (Heat)', path: '/orchestration' }
+            ]
+          }
+        },
+        {
           path: 'monitoring',
           name: 'monitoring',
           component: () => import('../pages/monitoring/MonitoringPage.vue'),
@@ -100,6 +112,18 @@ const router = createRouter({
           meta: { 
             title: 'Settings',
             breadcrumbs: [{ text: 'Settings', path: '/settings' }] 
+          }
+        },
+        {
+          path: 'load-balancers',
+          name: 'load-balancers',
+          component: () => import('../pages/network/LoadBalancersPage.vue'),
+          meta: { 
+            title: 'Load Balancers',
+            breadcrumbs: [
+              { text: 'Networking', path: '/network' },
+              { text: 'Load Balancers', path: '/load-balancers' }
+            ] 
           }
         }
       ]

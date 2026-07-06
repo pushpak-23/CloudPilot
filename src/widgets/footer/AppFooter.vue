@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="border-t border-zinc-800 h-9 bg-zinc-950 flex items-center justify-between px-6 text-xs text-zinc-500 font-medium"
+    class="border-t border-zinc-800/40 h-8 bg-zinc-950/90 backdrop-blur-sm flex items-center justify-between px-6 text-[11px] text-zinc-500 font-medium"
   >
     <!-- Left: Connection Status -->
     <div class="flex items-center gap-2">

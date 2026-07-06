@@ -104,93 +104,124 @@
     </div>
 
     <!-- Volumes Tab -->
-    <div v-if="activeTab === 'volumes'" class="bg-zinc-950/40 border border-zinc-800 rounded-xl overflow-hidden shadow-xl animate-in fade-in duration-200">
-      <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/10">
-        <h2 class="font-semibold text-lg text-white">Storage Volumes</h2>
-        <input
-          v-model="searchQuery"
-          placeholder="Filter volumes..."
-          class="form-input sm:w-64"
-        />
+    <div v-if="activeTab === 'volumes'" class="space-y-4">
+      <!-- Bulk Operations Bar -->
+      <div v-if="selectedVolumeIds.length > 0" class="flex items-center justify-between gap-4 p-4 bg-blue-600/10 border border-blue-500/20 rounded-xl animate-in slide-in-from-top-2 duration-200">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-blue-400">{{ selectedVolumeIds.length }} volumes selected</span>
+        </div>
+        <button
+          @click="handleBulkDeleteVolumes"
+          class="btn-table-danger py-1.5 px-3 rounded-lg"
+        >
+          Bulk Delete
+        </button>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b border-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider bg-zinc-900/40 select-none">
-              <th class="p-4">Volume Name</th>
-              <th class="p-4">Status</th>
-              <th class="p-4">Size</th>
-              <th class="p-4">Ceph Backend Pool</th>
-              <th class="p-4">Attached Resource</th>
-              <th class="p-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-zinc-850 text-sm">
-            <tr v-if="storageStore.loading">
-              <td colspan="6" class="p-8 text-center text-zinc-500">
-                <Loader class="animate-spin inline-block mr-2" :size="16" /> Loading volumes from Cinder API...
-              </td>
-            </tr>
-            <tr v-else-if="filteredVolumes.length === 0">
-              <td colspan="6" class="p-8 text-center text-zinc-500">
-                No storage volumes found.
-              </td>
-            </tr>
-            <tr
-              v-for="vol in filteredVolumes"
-              :key="vol.id"
-              class="hover:bg-zinc-900/30 transition-colors cursor-pointer"
-              @click="openDetails(vol)"
-            >
-              <td class="p-4 font-semibold text-blue-400 hover:text-blue-300 transition-colors">
-                {{ vol.name }}
-              </td>
-              <td class="p-4">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="vol.statusClass">
-                  <span class="w-1.5 h-1.5 rounded-full" :class="vol.bulletClass"></span>
-                  {{ vol.status }}
-                </span>
-              </td>
-              <td class="p-4 font-mono text-zinc-300">{{ vol.size }}</td>
-              <td class="p-4 text-zinc-400 font-mono text-xs">{{ vol.type }}</td>
-              <td class="p-4 text-zinc-400">
-                <span v-if="vol.attachedTo && vol.attachedTo !== 'None (Unattached)'" class="text-blue-400 flex items-center gap-1.5">
-                  <Server :size="12" /> {{ getAttachedVMName(vol.attachedTo) }}
-                </span>
-                <span v-else class="text-zinc-650 italic">Unattached</span>
-              </td>
-              <td class="p-4 text-right" @click.stop>
-                <div class="flex items-center justify-end gap-2">
-                  <button
-                    @click="triggerCreateSnapshot(vol)"
-                    class="btn-table"
-                  >
-                    Snapshot
-                  </button>
-                  <button
-                    @click="triggerCreateBackup(vol)"
-                    class="btn-table"
-                  >
-                    Backup
-                  </button>
-                  <button
-                    @click="openDetails(vol)"
-                    class="btn-table"
-                  >
-                    Manage
-                  </button>
-                  <button
-                    @click="handleDelete(vol)"
-                    class="btn-table-danger"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="bg-zinc-950/40 border border-zinc-800 rounded-xl overflow-hidden shadow-xl animate-in fade-in duration-200">
+        <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/10">
+          <h2 class="font-semibold text-lg text-white">Storage Volumes</h2>
+          <input
+            v-model="searchQuery"
+            placeholder="Filter volumes..."
+            class="form-input sm:w-64"
+          />
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider bg-zinc-900/40 select-none">
+                <th class="p-4 w-10">
+                  <input
+                    type="checkbox"
+                    :checked="isAllVolumesSelected"
+                    @change="toggleSelectAllVolumes"
+                    class="custom-checkbox"
+                  />
+                </th>
+                <th class="p-4">Volume Name</th>
+                <th class="p-4">Status</th>
+                <th class="p-4">Size</th>
+                <th class="p-4">Ceph Backend Pool</th>
+                <th class="p-4">Attached Resource</th>
+                <th class="p-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-850 text-sm">
+              <tr v-if="storageStore.loading">
+                <td colspan="7" class="p-8 text-center text-zinc-500">
+                  <Loader class="animate-spin inline-block mr-2" :size="16" /> Loading volumes from Cinder API...
+                </td>
+              </tr>
+              <tr v-else-if="filteredVolumes.length === 0">
+                <td colspan="7" class="p-8 text-center text-zinc-500">
+                  No storage volumes found.
+                </td>
+              </tr>
+              <tr
+                v-for="vol in filteredVolumes"
+                :key="vol.id"
+                class="hover:bg-zinc-900/30 transition-colors cursor-pointer"
+                @click="openDetails(vol)"
+              >
+                <td class="p-4 w-10" @click.stop>
+                  <input
+                    type="checkbox"
+                    :value="vol.id"
+                    v-model="selectedVolumeIds"
+                    class="custom-checkbox"
+                  />
+                </td>
+                <td class="p-4 font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+                  {{ vol.name }}
+                </td>
+                <td class="p-4">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="vol.statusClass">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="vol.bulletClass"></span>
+                    {{ vol.status }}
+                  </span>
+                </td>
+                <td class="p-4 font-mono text-zinc-300">{{ vol.size }}</td>
+                <td class="p-4 text-zinc-400 font-mono text-xs">{{ vol.type }}</td>
+                <td class="p-4 text-zinc-400">
+                  <span v-if="vol.attachedTo && vol.attachedTo !== 'None (Unattached)'" class="text-blue-400 flex items-center gap-1.5">
+                    <Server :size="12" /> {{ getAttachedVMName(vol.attachedTo) }}
+                  </span>
+                  <span v-else class="text-zinc-650 italic">Unattached</span>
+                </td>
+                <td class="p-4 text-right" @click.stop>
+                  <div class="flex items-center justify-end gap-2">
+                    <button
+                      @click="triggerCreateSnapshot(vol)"
+                      class="btn-table"
+                    >
+                      Snapshot
+                    </button>
+                    <button
+                      @click="triggerCreateBackup(vol)"
+                      class="btn-table"
+                    >
+                      Backup
+                    </button>
+                    <button
+                      @click="openDetails(vol)"
+                      class="btn-table"
+                    >
+                      Manage
+                    </button>
+                    <button
+                      @click="handleDelete(vol)"
+                      class="btn-table-danger"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -573,6 +604,7 @@ const computeStore = useComputeStore()
 
 const activeTab = ref('volumes')
 const searchQuery = ref('')
+const selectedVolumeIds = ref<string[]>([])
 const snapshotSearchQuery = ref('')
 const backupSearchQuery = ref('')
 
@@ -790,6 +822,44 @@ async function submitRestoreBackup() {
     activeTab.value = 'volumes'
   } catch (err: any) {
     alert('Failed to restore backup: ' + (err.message || err))
+  }
+}
+
+const isAllVolumesSelected = computed(() => {
+  return filteredVolumes.value.length > 0 && selectedVolumeIds.value.length === filteredVolumes.value.length
+})
+
+function toggleSelectAllVolumes() {
+  if (isAllVolumesSelected.value) {
+    selectedVolumeIds.value = []
+  } else {
+    selectedVolumeIds.value = filteredVolumes.value.map(v => v.id)
+  }
+}
+
+async function handleBulkDeleteVolumes() {
+  if (!confirm(`Are you sure you want to delete the ${selectedVolumeIds.value.length} selected volumes?`)) return
+  const idsToDelete = [...selectedVolumeIds.value]
+  selectedVolumeIds.value = []
+
+  let successCount = 0
+  let failCount = 0
+  let lastError = ''
+
+  for (const id of idsToDelete) {
+    try {
+      await storageStore.deleteVolume(id)
+      successCount++
+    } catch (err: any) {
+      failCount++
+      lastError = err.message || err
+    }
+  }
+
+  if (failCount > 0) {
+    alert(`Bulk delete completed. Success: ${successCount}, Failures: ${failCount}. Last error: ${lastError}`)
+  } else {
+    alert(`Successfully deleted ${successCount} volumes.`)
   }
 }
 

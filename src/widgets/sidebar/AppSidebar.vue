@@ -2,24 +2,27 @@
   <!-- Desktop Sidebar -->
   <aside
     :class="[
-      'fixed inset-y-0 left-0 z-30 flex-col border-r border-zinc-800 bg-zinc-950 transition-all duration-300 hidden md:flex',
+      'fixed inset-y-0 left-0 z-30 flex-col border-r border-zinc-800/60 bg-zinc-950/95 backdrop-blur-md transition-all duration-300 hidden md:flex',
       layout.sidebarCollapsed ? 'w-20' : 'w-64',
     ]"
   >
     <!-- Sidebar Header -->
-    <div class="h-16 flex items-center justify-between px-5 border-b border-zinc-850">
-      <div v-if="!layout.sidebarCollapsed" class="flex items-center gap-2">
+    <div class="h-16 flex items-center justify-between px-5 border-b border-zinc-800/50">
+      <div v-if="!layout.sidebarCollapsed" class="flex items-center gap-2.5">
         <div
-          class="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg"
+          class="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-shadow hover:shadow-xl"
           :style="{ backgroundColor: themeStore.accentColor, boxShadow: `0 4px 14px -3px ${themeStore.accentColorBorder}` }"
         >
           <Cloud :size="18" class="text-white" />
         </div>
-        <span class="font-bold text-lg text-white tracking-wider">CloudPilot</span>
+        <div class="flex flex-col">
+          <span class="font-bold text-base text-white tracking-wide leading-tight">CloudPilot</span>
+          <span class="text-[9px] text-zinc-500 uppercase tracking-widest font-semibold">Control Plane</span>
+        </div>
       </div>
       <div v-else class="w-full flex justify-center">
         <div
-          class="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg"
+          class="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg"
           :style="{ backgroundColor: themeStore.accentColor, boxShadow: `0 4px 14px -3px ${themeStore.accentColorBorder}` }"
         >
           <Cloud :size="18" class="text-white" />
@@ -28,47 +31,54 @@
 
       <button
         @click="layout.toggleSidebar()"
-        class="text-zinc-400 hover:text-white transition-colors p-1.5 hover:bg-zinc-900 rounded-lg"
+        class="text-zinc-500 hover:text-white transition-colors p-1.5 hover:bg-zinc-900 rounded-lg"
       >
         <component :is="layout.sidebarCollapsed ? PanelLeft : PanelLeftClose" :size="18" />
       </button>
     </div>
 
     <!-- Navigation List -->
-    <nav class="flex-1 mt-6 space-y-1.5 px-3 overflow-y-auto">
-      <RouterLink
-        v-for="item in navigation"
+    <nav class="flex-1 mt-4 space-y-0.5 px-3 overflow-y-auto">
+      <template
+        v-for="(item, idx) in navigation"
         :key="item.title"
-        :to="item.path"
-        :class="[
-          'flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-all group',
-          isRouteActive(item.path)
-            ? 'border'
-            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 border border-transparent'
-        ]"
-        :style="isRouteActive(item.path) ? {
-          backgroundColor: themeStore.accentColorSubtle,
-          color: themeStore.accentColor,
-          borderColor: themeStore.accentColorBorder,
-        } : {}"
       >
-        <component
-          :is="item.icon"
-          :size="18"
+        <!-- Section divider before certain items -->
+        <div v-if="idx === 5 || idx === 7" class="py-2 px-2">
+          <div class="border-t border-zinc-800/50"></div>
+        </div>
+        <RouterLink
+          :to="item.path"
           :class="[
-            'transition-colors shrink-0',
-            !isRouteActive(item.path) ? 'text-zinc-400 group-hover:text-zinc-300' : ''
+            'flex items-center gap-3 rounded-xl p-2.5 text-sm font-medium transition-all group',
+            isRouteActive(item.path)
+              ? 'border shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 border border-transparent'
           ]"
-          :style="isRouteActive(item.path) ? { color: themeStore.accentColor } : {}"
-        />
-
-        <span
-          v-if="!layout.sidebarCollapsed"
-          class="transition-opacity duration-300"
+          :style="isRouteActive(item.path) ? {
+            backgroundColor: themeStore.accentColorSubtle,
+            color: themeStore.accentColor,
+            borderColor: themeStore.accentColorBorder,
+          } : {}"
         >
-          {{ item.title }}
-        </span>
-      </RouterLink>
+          <component
+            :is="item.icon"
+            :size="18"
+            :class="[
+              'transition-colors shrink-0',
+              !isRouteActive(item.path) ? 'text-zinc-500 group-hover:text-zinc-300' : ''
+            ]"
+            :style="isRouteActive(item.path) ? { color: themeStore.accentColor } : {}"
+          />
+
+          <span
+            v-if="!layout.sidebarCollapsed"
+            class="transition-opacity duration-300"
+          >
+            {{ item.title }}
+          </span>
+        </RouterLink>
+      </template>
     </nav>
   </aside>
 

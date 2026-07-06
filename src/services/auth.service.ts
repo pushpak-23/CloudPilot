@@ -64,5 +64,50 @@ export const authService = {
 
   async logout(token: string): Promise<void> {
     console.log(`Keystone token ${token} logged out locally.`)
+  },
+
+  async switchProject(username: string, project: string): Promise<UserSession> {
+    const token = localStorage.getItem('cp_token')
+    const userStr = localStorage.getItem('cp_user')
+    if (!token || !userStr) {
+      throw new Error('Not authenticated.')
+    }
+    const user = JSON.parse(userStr)
+
+    const response = await fetch('/api/v1/auth/switch-project', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': token
+      },
+      body: JSON.stringify({
+        username: username,
+        project: project,
+        domain: 'Default',
+        auth_url: user.auth_url || undefined,
+        ca_cert: undefined
+      })
+    })
+
+    const data = await response.json()
+    if (!response.ok || !data.success) {
+      throw new Error(data?.error?.message || 'Failed to switch project scope.')
+    }
+
+    const sessionData = data.user
+    const newToken = data.token
+
+    return {
+      username: username,
+      email: `${username}@cloudpilot.internal`,
+      role: sessionData.roles?.[0] || 'Member',
+      token: newToken,
+      project: sessionData.project || project,
+      project_id: sessionData.project_id || '',
+      region: user.region || 'RegionOne',
+      roles: sessionData.roles,
+      endpoints: sessionData.endpoints || {},
+      auth_url: user.auth_url || ''
+    }
   }
 }

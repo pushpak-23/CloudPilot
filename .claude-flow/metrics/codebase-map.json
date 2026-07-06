@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-03T11:41:28.204Z",
+  "timestamp": "2026-07-03T21:26:28.437Z",
   "projectRoot": "/home/esec/Projects/Horizon-dashboard",
   "structure": {
     "hasPackageJson": true,
@@ -7,5 +7,5 @@
     "hasClaudeConfig": false,
     "hasClaudeFlow": true
   },
-  "scannedAt": 1783078888204
+  "scannedAt": 1783113988437
 }

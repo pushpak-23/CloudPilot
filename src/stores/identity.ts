@@ -27,6 +27,19 @@ export const useIdentityStore = defineStore('identity', {
       } finally {
         this.loading = false
       }
+    },
+
+    async createProject(name: string, description: string, enabled: boolean) {
+      this.loading = true
+      try {
+        await identityService.createProject(name, description, enabled)
+        this.lastFetchedAt = null
+        await this.loadProjects()
+      } catch (err) {
+        console.error('Failed to create project', err)
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

@@ -1,11 +1,30 @@
 <template>
-  <div
-    v-if="show"
-    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 lg:p-8 overflow-y-auto"
-  >
-    <div
-      class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-6xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+  <div>
+    <!-- Backdrop Overlay -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-250 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
     >
+      <div v-if="show" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity animate-fade-in" @click="$emit('close')"></div>
+    </Transition>
+
+    <!-- Side-Drawer Panel -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out transform"
+      enter-from-class="translate-x-full"
+      enter-to-class="translate-x-0"
+      leave-active-class="transition duration-250 ease-in transform"
+      leave-from-class="translate-x-0"
+      leave-to-class="translate-x-full"
+    >
+      <div
+        v-if="show"
+        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[700px] md:w-[900px] lg:w-[1100px] xl:w-[1250px] bg-zinc-955/[0.97] border-l border-zinc-800/60 shadow-2xl flex flex-col overflow-hidden backdrop-blur-sm"
+      >
       <!-- Header -->
       <div
         class="p-6 border-b border-zinc-800 flex justify-between items-start bg-zinc-900/80 relative overflow-hidden"
@@ -1027,8 +1046,9 @@
         </button>
       </div>
     </div>
+  </Transition>
 
-    <!-- OVERLAY SUB-MODALS -->
+  <!-- OVERLAY SUB-MODALS -->
 
     <!-- Rename Modal -->
     <div
@@ -1096,14 +1116,40 @@
           </div>
         </div>
         <div
-          class="p-6 bg-zinc-950 font-mono text-xs text-zinc-300 overflow-y-auto flex-1 select-text selection:bg-blue-600/30"
+          class="p-6 bg-zinc-950 font-mono text-xs text-zinc-300 overflow-y-auto flex-1 select-text selection:bg-blue-600/30 relative min-h-[300px]"
         >
-          <pre
-            v-if="consoleLogText"
-            class="whitespace-pre-wrap leading-relaxed"
-            >{{ consoleLogText }}</pre>
-          <div v-else class="text-zinc-650 italic">
-            No output received from the hypervisor console.
+          <!-- Loading overlay -->
+          <div v-if="loading" class="absolute inset-0 bg-zinc-950/85 backdrop-blur-xs flex items-center justify-center text-zinc-400 text-sm z-10">
+            <Loader class="animate-spin mr-2" :size="18" /> Retrieving hypervisor console output...
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div v-if="consoleLogError" class="space-y-4 font-sans select-none">
+            <div class="flex items-start gap-3.5 p-4.5 rounded-xl bg-red-950/15 border border-red-500/20 text-red-400">
+              <AlertCircle class="w-5 h-5 shrink-0 mt-0.5" />
+              <div class="space-y-2 flex-1">
+                <h4 class="font-bold text-red-200 text-sm">Unable to Retrieve Console Output</h4>
+                <p class="text-xs text-zinc-400 leading-relaxed">
+                  The hypervisor returned a conflict state. This typically indicates that the instance is in a transient state (such as Scheduling, Building, or Spawning) and the hypervisor serial console buffer is not yet initialized. Please wait until the instance status is <span class="text-emerald-400 font-semibold">ACTIVE</span> before querying logs.
+                </p>
+                <div class="mt-3 p-3.5 bg-zinc-900 border border-zinc-800 rounded-lg text-[11px] font-mono text-zinc-300 leading-relaxed overflow-x-auto select-text selection:bg-red-500/20">
+                  <div class="font-semibold text-red-300 uppercase tracking-wider text-[9px] mb-1">Raw API Trace:</div>
+                  {{ consoleLogError }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Log Text Output -->
+          <div v-else>
+            <pre
+              v-if="consoleLogText"
+              class="whitespace-pre-wrap leading-relaxed"
+              v-html="ansiToHtml(consoleLogText)"
+            ></pre>
+            <div v-else-if="!loading" class="text-zinc-600 italic select-none">
+              No console output buffer logs received from the hypervisor.
+            </div>
           </div>
         </div>
         <div
@@ -1559,6 +1605,7 @@ const newServerName = ref('')
 const showConsoleLogModal = ref(false)
 const consoleLogText = ref('')
 const consoleLogLines = ref(100)
+const consoleLogError = ref('')
 
 const showAttachInterfaceModal = ref(false)
 const selectedNetworkToAttach = ref('')
@@ -2020,6 +2067,9 @@ async function openVncConsole() {
 }
 
 async function fetchConsoleLog() {
+  showConsoleLogModal.value = true
+  consoleLogError.value = ''
+  consoleLogText.value = ''
   try {
     loading.value = true
     const log = await computeService.getConsoleLog(
@@ -2027,12 +2077,99 @@ async function fetchConsoleLog() {
       consoleLogLines.value
     )
     consoleLogText.value = log
-    showConsoleLogModal.value = true
   } catch (err: any) {
-    alert('Failed to fetch console logs: ' + (err.message || err))
+    consoleLogError.value = err.message || String(err)
   } finally {
     loading.value = false
   }
+}
+
+function ansiToHtml(text: string): string {
+  if (!text) return ''
+  
+  // Escape HTML entities to prevent XSS
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+  
+  // Regex to match ANSI escape codes
+  const ansiRegex = /\u001b\[([0-9;]+)m/g
+  let openSpan = false
+  
+  const formatted = escaped.replace(ansiRegex, (match, codesStr) => {
+    const codes = codesStr.split(';')
+    let result = ''
+    
+    if (openSpan) {
+      result += '</span>'
+      openSpan = false
+    }
+    
+    let hasReset = false
+    let textColor = ''
+    let isBold = false
+    let isItalic = false
+    
+    for (const code of codes) {
+      const c = parseInt(code)
+      if (c === 0) {
+        hasReset = true
+      } else if (c === 1) {
+        isBold = true
+      } else if (c === 3) {
+        isItalic = true
+      } else if (c >= 30 && c <= 37) {
+        const colors = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
+        textColor = colors[c - 30] || ''
+      } else if (c >= 90 && c <= 97) {
+        const colors = ['bright-black', 'bright-red', 'bright-green', 'bright-yellow', 'bright-blue', 'bright-magenta', 'bright-cyan', 'bright-white']
+        textColor = colors[c - 90] || ''
+      }
+    }
+    
+    if (hasReset) {
+      return result
+    }
+    
+    const classMap: Record<string, string> = {
+      'black': 'text-zinc-900',
+      'red': 'text-red-500 font-semibold',
+      'green': 'text-emerald-400 font-semibold',
+      'yellow': 'text-amber-400 font-semibold',
+      'blue': 'text-blue-400 font-semibold',
+      'magenta': 'text-purple-400',
+      'cyan': 'text-cyan-400 font-semibold',
+      'white': 'text-zinc-100',
+      'bright-black': 'text-zinc-500',
+      'bright-red': 'text-red-400 font-bold',
+      'bright-green': 'text-emerald-300 font-bold',
+      'bright-yellow': 'text-amber-300 font-bold',
+      'bright-blue': 'text-blue-300 font-bold',
+      'bright-magenta': 'text-purple-300',
+      'bright-cyan': 'text-cyan-300 font-bold',
+      'bright-white': 'text-white font-bold'
+    }
+    
+    const classes: string[] = []
+    if (isBold) classes.push('font-bold')
+    if (isItalic) classes.push('italic')
+    if (textColor) {
+      const cls = classMap[textColor]
+      if (cls) {
+        classes.push(cls)
+      }
+    }
+    
+    if (classes.length > 0) {
+      openSpan = true
+      return `${result}<span class="${classes.join(' ')}">`
+    }
+    
+    return result
+  })
+  
+  return openSpan ? `${formatted}</span>` : formatted
 }
 
 // Lock / Unlock toggle

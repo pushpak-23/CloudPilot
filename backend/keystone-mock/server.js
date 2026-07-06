@@ -16,6 +16,29 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ error: { message: "Invalid JSON" } }));
         return;
       }
+
+      const isTokenAuth = authReq?.auth?.identity?.methods?.includes("token");
+
+      if (isTokenAuth) {
+        const project = authReq?.auth?.scope?.project?.name || "admin";
+        res.writeHead(201, {
+          'Content-Type': 'application/json',
+          'X-Subject-Token': 'mock-keystone-token-xyz-scoped'
+        });
+        res.end(JSON.stringify({
+          token: {
+            methods: ["token"],
+            user: { id: "user-1", name: "admin" },
+            project: { id: "proj-scoped-id", name: project },
+            roles: [
+              { id: "role-1", name: "admin" }
+            ],
+            catalog: [],
+            expires_at: new Date(Date.now() + 3600000).toISOString()
+          }
+        }));
+        return;
+      }
       
       const username = authReq?.auth?.identity?.password?.user?.name || "admin";
       const project = authReq?.auth?.scope?.project?.name || "admin";

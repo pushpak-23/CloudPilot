@@ -8,6 +8,7 @@ import {
   Bot,
   Settings,
   Activity,
+  Layers,
 } from 'lucide-vue-next'
 
 export default [
@@ -41,6 +42,22 @@ export default [
     icon: Network,
 
     path: '/network',
+  },
+
+  {
+    title: 'Load Balancers',
+
+    icon: Shield,
+
+    path: '/load-balancers',
+  },
+
+  {
+    title: 'Orchestration',
+
+    icon: Layers,
+
+    path: '/orchestration',
   },
 
   {

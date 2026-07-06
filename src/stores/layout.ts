@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia'
-import { identityService } from '@/services/identity.service'
+import { identityService, type Project } from '@/services/identity.service'
+import { useAuthStore } from './auth'
+import { useComputeStore } from './compute'
+import { useStorageStore } from './storage'
+import { useNetworkStore } from './network'
+import { useOrchestrationStore } from './orchestration'
+import { useIdentityStore } from './identity'
 
 export interface Notification {
   id: number
@@ -20,6 +26,7 @@ export const useLayoutStore = defineStore('layout', {
     currentProject: 'Default-Project',
     regions: ['RegionOne', 'RegionTwo', 'RegionThree'],
     projects: ['Default-Project', 'Production-Env', 'Staging-Env', 'Testing-Lab'],
+    projectsObjects: [] as Project[],
     contextLoaded: false,
     notifications: [
       {
@@ -95,14 +102,44 @@ export const useLayoutStore = defineStore('layout', {
         window.location.reload()
       }
     },
-    setProject(project: string) {
+    async setProject(project: string) {
       this.currentProject = project
-      const storedUser = localStorage.getItem('cp_user')
-      if (storedUser) {
-        const user = JSON.parse(storedUser)
-        user.project = project
-        localStorage.setItem('cp_user', JSON.stringify(user))
-        window.location.reload()
+      const authStore = useAuthStore()
+      
+      const projObj = this.projectsObjects.find(p => p.name === project)
+      const targetIdentifier = projObj?.id || project
+
+      try {
+        // Exchange active token for project-scoped token
+        await authStore.switchProject(targetIdentifier)
+        
+        // Resolve all resource stores
+        const computeStore = useComputeStore()
+        const storageStore = useStorageStore()
+        const networkStore = useNetworkStore()
+        const orchestrationStore = useOrchestrationStore()
+        const identityStore = useIdentityStore()
+        
+        // Invalidate active store caches
+        computeStore.invalidateCache()
+        storageStore.invalidateCache()
+        networkStore.invalidateCache()
+        orchestrationStore.lastFetchedAt = null
+        identityStore.lastFetchedAt = null
+
+        // Load new project context data in-place
+        await Promise.allSettled([
+          computeStore.loadAllComputeData(),
+          storageStore.loadVolumes(),
+          storageStore.loadSnapshots(),
+          storageStore.loadBackups(),
+          networkStore.loadNetworks(),
+          networkStore.loadRouters(),
+          orchestrationStore.loadStacks(),
+          identityStore.loadProjects()
+        ])
+      } catch (e) {
+        console.error('Failed to perform Keystone project switch scoping:', e)
       }
     },
     async loadContextData() {
@@ -111,6 +148,7 @@ export const useLayoutStore = defineStore('layout', {
       try {
         const projs = await identityService.getProjects()
         if (projs.length > 0) {
+          this.projectsObjects = projs
           this.projects = projs.map(p => p.name)
         }
         

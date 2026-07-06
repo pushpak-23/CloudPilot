@@ -12,7 +12,7 @@
     >
       <AppHeader />
 
-      <main class="flex-1 overflow-auto bg-zinc-950">
+      <main class="flex-1 overflow-auto bg-zinc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/20 via-zinc-950 to-zinc-950">
         <RouterView />
       </main>
 

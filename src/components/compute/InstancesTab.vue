@@ -120,7 +120,7 @@
           <thead>
             <tr class="border-b border-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider bg-zinc-900/40 select-none">
               <th class="p-4 w-12 text-center">
-                <input type="checkbox" v-model="selectAll" class="h-4 w-4 text-cyan-600 bg-zinc-800 border border-cyan-600 rounded focus:ring-2 focus:ring-cyan-500" />
+                <input type="checkbox" v-model="selectAll" class="custom-checkbox" />
               </th>
               <th class="p-4">VM Name</th>
               <th class="p-4">Status</th>
@@ -149,14 +149,38 @@
               ]"
             >
               <td class="p-4 text-center">
-                <input type="checkbox" :value="vm.id" v-model="selectedVmIds" class="h-4 w-4 text-cyan-600 bg-zinc-800 border border-cyan-600 rounded focus:ring-2 focus:ring-cyan-500" />
+                <input type="checkbox" :value="vm.id" v-model="selectedVmIds" class="custom-checkbox" />
               </td>
               <td class="p-4 font-semibold text-blue-400 hover:text-blue-300 cursor-pointer transition-colors" @click="$emit('open-details', vm.id)">
                 {{ vm.name }}
               </td>
-              <td class="p-4">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="vm.statusClass">
-                  <span class="w-1.5 h-1.5 rounded-full" :class="[vm.bulletClass, vm.status === 'Provisioning' || vm.status === 'Rebuilding' || vm.status === 'Resizing' || vm.status === 'Migrating' ? 'animate-ping' : '']"></span>
+              <td class="p-4 min-w-[200px]">
+                <div v-if="vm.status === 'Provisioning'" class="space-y-1.5 py-1">
+                  <!-- Stage and % -->
+                  <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                    <span class="flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                      {{ getProvisioningProgress(vm).label }}
+                    </span>
+                    <span class="text-blue-400 font-mono text-[11px]">{{ getProvisioningProgress(vm).percent }}%</span>
+                  </div>
+                  <!-- Progress Bar -->
+                  <div class="h-1.5 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden flex">
+                    <div 
+                      class="h-full transition-all duration-500 bg-linear-to-r from-blue-600 to-indigo-500"
+                      :style="{ width: `${getProvisioningProgress(vm).percent}%` }"
+                    ></div>
+                  </div>
+                  <!-- Step Labels -->
+                  <div class="flex justify-between text-[8px] font-extrabold uppercase px-0.5 tracking-tight select-none">
+                    <span :class="getProvisioningProgress(vm).percent >= 25 ? 'text-blue-400' : 'text-zinc-600'">Sched</span>
+                    <span :class="getProvisioningProgress(vm).percent >= 50 ? 'text-blue-400' : 'text-zinc-600'">Block</span>
+                    <span :class="getProvisioningProgress(vm).percent >= 75 ? 'text-blue-400' : 'text-zinc-600'">Net</span>
+                    <span :class="getProvisioningProgress(vm).percent >= 90 ? 'text-blue-400' : 'text-zinc-600'">Spawn</span>
+                  </div>
+                </div>
+                <span v-else class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="vm.statusClass">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="[vm.bulletClass, vm.status === 'Rebuilding' || vm.status === 'Resizing' || vm.status === 'Migrating' ? 'animate-ping' : '']"></span>
                   {{ vm.status }}
                 </span>
               </td>
@@ -285,6 +309,12 @@
                   >
                     <Server :size="12" /> Take Snapshot
                   </button>
+                  <button
+                    @click="triggerCloneModal(vm)"
+                    class="w-full flex items-center gap-2 rounded px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer"
+                  >
+                    <Layers :size="12" /> Clone Instance
+                  </button>
                 </div>
               </td>
             </tr>
@@ -311,6 +341,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Clone VM Modal -->
+    <div v-if="showCloneModal && cloneTargetVm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-955/80 backdrop-blur-sm" @click.self="showCloneModal = false">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl max-w-md w-full shadow-2xl p-6 space-y-4 text-left animate-in zoom-in-95 duration-150">
+        <h2 class="text-lg font-bold text-white border-b border-zinc-800 pb-3 flex items-center gap-2">
+          <Layers class="text-blue-500" :size="20" /> Clone VM Instance
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <span class="text-xs text-zinc-500 uppercase font-semibold">Source Instance</span>
+            <div class="text-sm font-bold text-zinc-300 mt-1">{{ cloneTargetVm.name }} (IP: {{ cloneTargetVm.ip || '-' }})</div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-zinc-400 uppercase">Cloned Instance Name</label>
+            <input
+              type="text"
+              v-model="cloneForm.name"
+              required
+              placeholder="e.g. web-server-clone"
+              class="w-full bg-zinc-955 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+          <button @click="showCloneModal = false" class="px-4 py-2 border border-zinc-800 rounded-lg text-sm text-zinc-400 hover:text-white bg-transparent cursor-pointer">Cancel</button>
+          <button @click="submitClone" :disabled="!cloneForm.name.trim() || cloneLoading" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer border-0">
+            <Loader v-if="cloneLoading" class="animate-spin" :size="14" />
+            <span>Start Cloning</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -327,6 +389,75 @@ const emit = defineEmits<{
 }>()
 
 const computeStore = useComputeStore()
+
+function getProvisioningProgress(vm: any) {
+  const state = (vm.taskState || '').toLowerCase()
+  if (!state) {
+    return {
+      percent: 30,
+      label: 'Building...',
+      stage: 'build'
+    }
+  }
+
+  // Clone stages
+  if (state.includes('snapshot')) {
+    return {
+      percent: 30,
+      label: vm.taskState || 'Snapshotting...',
+      stage: 'snapshot'
+    }
+  }
+  if (state.includes('uploading') || state.includes('glance')) {
+    return {
+      percent: 65,
+      label: vm.taskState || 'Uploading...',
+      stage: 'upload'
+    }
+  }
+  if (state.includes('provisioning') || state.includes('clone')) {
+    return {
+      percent: 85,
+      label: vm.taskState || 'Provisioning Clone...',
+      stage: 'clone'
+    }
+  }
+
+  if (state.includes('schedul')) {
+    return {
+      percent: 25,
+      label: 'Scheduling',
+      stage: 'scheduling'
+    }
+  }
+  if (state.includes('block_device') || state.includes('block-device') || state.includes('volume')) {
+    return {
+      percent: 50,
+      label: 'Block Device Mapping',
+      stage: 'block_device'
+    }
+  }
+  if (state.includes('network') || state.includes('networking')) {
+    return {
+      percent: 75,
+      label: 'Configuring Network',
+      stage: 'networking'
+    }
+  }
+  if (state.includes('spawn')) {
+    return {
+      percent: 90,
+      label: 'Spawning VM',
+      stage: 'spawning'
+    }
+  }
+  
+  return {
+    percent: 60,
+    label: vm.taskState,
+    stage: 'progress'
+  }
+}
 const searchQuery = ref('')
 const activeOperationsVm = ref<string | null>(null)
 
@@ -460,6 +591,34 @@ function triggerSnapshotModal(vm: any) {
 const showMigrateModal = ref(false)
 const migrateTargetVm = ref<any>(null)
 const migrateDestinationHost = ref('')
+
+// Cloning state
+const showCloneModal = ref(false)
+const cloneTargetVm = ref<any>(null)
+const cloneLoading = ref(false)
+const cloneForm = ref({
+  name: ''
+})
+
+function triggerCloneModal(vm: any) {
+  cloneTargetVm.value = vm
+  cloneForm.value.name = `${vm.name}-clone`
+  showCloneModal.value = true
+  closeDropdowns()
+}
+
+async function submitClone() {
+  if (!cloneTargetVm.value || !cloneForm.value.name.trim()) return
+  cloneLoading.value = true
+  try {
+    computeStore.cloneInstance(cloneTargetVm.value.id, cloneForm.value.name.trim())
+    showCloneModal.value = false
+  } catch (err: any) {
+    alert(err.message || 'Clone initiation failed')
+  } finally {
+    cloneLoading.value = false
+  }
+}
 
 const availableHostsForMigration = computed(() => {
   if (!migrateTargetVm.value) return []
