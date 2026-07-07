@@ -70,8 +70,8 @@ export const useStorageStore = defineStore('storage', {
       }
     },
 
-    async createVolume(name: string, sizeGb: number, type: string) {
-      const newVol = await storageService.createVolume(name, sizeGb, type)
+    async createVolume(name: string, sizeGb: number, type: string, availabilityZone?: string) {
+      const newVol = await storageService.createVolume(name, sizeGb, type, availabilityZone)
       this.volumes.unshift(newVol)
       this.invalidateCache()
       // Refresh after a short delay to get updated status (e.g., Available)

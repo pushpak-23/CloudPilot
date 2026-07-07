@@ -391,7 +391,7 @@
                 type="number"
                 v-model.number="newVolSize"
                 min="1"
-                class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                class="w-full bg-zinc-955 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
             <div class="space-y-1.5">
@@ -406,6 +406,17 @@
                 </option>
               </select>
             </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-zinc-400 uppercase">Availability Zone</label>
+            <select
+              v-model="newVolZone"
+              class="w-full bg-zinc-955 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+            >
+              <option v-for="z in computeStore.availabilityZones" :key="z" :value="z">
+                {{ z }}
+              </option>
+            </select>
           </div>
         </div>
         <div class="flex justify-end gap-3 pt-3 border-t border-zinc-800">
@@ -612,6 +623,7 @@ const showCreateModal = ref(false)
 const newVolName = ref('')
 const newVolSize = ref(100)
 const newVolType = ref('__default__')
+const newVolZone = ref('nova')
 
 // Details state
 const selectedVolume = ref<any>(null)
@@ -664,6 +676,13 @@ async function openCreateModal() {
   }
   const firstType = storageStore.volumeTypes[0]
   newVolType.value = firstType || '__default__'
+  
+  // Make sure availability zones are loaded
+  if (computeStore.availabilityZones.length <= 1) {
+    await computeStore.loadAllComputeData()
+  }
+  newVolZone.value = computeStore.availabilityZones[0] || 'nova'
+  
   showCreateModal.value = true
 }
 
@@ -718,10 +737,12 @@ function submitCreate() {
     storageStore.createVolume(
       newVolName.value.trim(),
       newVolSize.value,
-      newVolType.value
+      newVolType.value,
+      newVolZone.value
     )
     newVolName.value = ''
     newVolSize.value = 100
+    newVolZone.value = 'nova'
     showCreateModal.value = false
   }
 }

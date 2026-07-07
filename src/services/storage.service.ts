@@ -210,7 +210,8 @@ export const storageService = {
   async createVolume(
     name: string,
     sizeGb: number,
-    type: string
+    type: string,
+    availabilityZone?: string
   ): Promise<Volume> {
     try {
       const payload = {
@@ -218,6 +219,7 @@ export const storageService = {
           name,
           size: sizeGb,
           volume_type: type === '__default__' ? null : type,
+          availability_zone: availabilityZone || undefined,
         },
       }
       const raw = await callProxy('volumev3', '/volumes', 'POST', payload)
@@ -231,7 +233,7 @@ export const storageService = {
         rawSize: sizeGb,
         type: type || 'default',
         attachedTo: 'None (Unattached)',
-        availabilityZone: raw.volume?.availability_zone || 'nova',
+        availabilityZone: raw.volume?.availability_zone || availabilityZone || 'nova',
         createdAt: raw.volume?.created_at || new Date().toISOString(),
         description: raw.volume?.description || '-',
         attachments: [],
