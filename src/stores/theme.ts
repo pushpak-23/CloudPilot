@@ -74,10 +74,12 @@ export const useThemeStore = defineStore('theme', {
     },
 
     toggleThemeMode() {
-      this.isDarkMode = !this.isDarkMode
       this.triggerWipeEffect()
-      this.applyThemeMode()
-      localStorage.setItem('cp_theme_mode', this.isDarkMode ? 'dark' : 'light')
+      setTimeout(() => {
+        this.isDarkMode = !this.isDarkMode
+        this.applyThemeMode()
+        localStorage.setItem('cp_theme_mode', this.isDarkMode ? 'dark' : 'light')
+      }, 250)
     },
 
     applyThemeMode() {
@@ -92,10 +94,12 @@ export const useThemeStore = defineStore('theme', {
     },
 
     setThemeStyle(style: 'standard' | 'cyberpunk') {
-      this.themeStyle = style
       this.triggerWipeEffect()
-      this.applyThemeStyle()
-      localStorage.setItem('cp_theme_style', style)
+      setTimeout(() => {
+        this.themeStyle = style
+        this.applyThemeStyle()
+        localStorage.setItem('cp_theme_style', style)
+      }, 250)
     },
 
     applyThemeStyle() {
