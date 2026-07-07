@@ -16,17 +16,17 @@
 }
 
 html.light {
-  --bg-app: #f4f4f5;
-  --bg-card: #ffffff;
-  --bg-sidebar: #f8fafc;
-  --bg-deep: #e4e4e7;
-  --color-border: #e4e4e7;
-  --color-border-subtle: #f4f4f5;
-  --text-main: #09090b;
-  --text-muted: #71717a;
-  --text-secondary: #27272a;
-  --card-glass-bg: rgba(255, 255, 255, 0.75);
-  --color-zinc-700-val: #d4d4d8;
+  --bg-app: #f1f5f9;           /* Soft slate-100 cool gray */
+  --bg-card: #f8fafc;          /* Off-white slate-50 */
+  --bg-sidebar: #e2e8f0;       /* Cool slate-200 */
+  --bg-deep: #e2e8f0;          /* Cool slate-200 deep background */
+  --color-border: #cbd5e1;     /* Slate-300 borders */
+  --color-border-subtle: #e2e8f0; /* Slate-200 subtle borders */
+  --text-main: #0f172a;        /* Soft slate-900 dark text */
+  --text-muted: #64748b;       /* Muted slate-500 text */
+  --text-secondary: #334155;   /* Secondary slate-700 text */
+  --card-glass-bg: rgba(248, 250, 252, 0.85);
+  --color-zinc-700-val: #94a3b8; /* Slate-400 borders */
 }
 
 @theme {
