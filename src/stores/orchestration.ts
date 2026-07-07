@@ -90,31 +90,21 @@ export const useOrchestrationStore = defineStore('orchestration', {
             else if (t.includes('LoadBalancer') || t.includes('LB')) type = 'loadbalancer'
             
             return {
-              id: r.physical_resource_id || r.resource_name,
-              label: r.resource_name,
+              id: r.logical_resource_id || r.resource_name,
+              label: r.resource_name || r.logical_resource_id,
               type
             }
           })
           
-          // Auto-connect nodes
+          // Parse edges from Heat 'required_by' field
           const edges: Array<{ from: string; to: string }> = []
-          const servers = nodes.filter(n => n.type === 'server')
-          const nets = nodes.filter(n => n.type === 'network' || n.type === 'subnet')
-          const lbs = nodes.filter(n => n.type === 'loadbalancer')
-          const sgs = nodes.filter(n => n.type === 'security_group')
-
-          servers.forEach(srv => {
-            nets.forEach(net => {
-              edges.push({ from: srv.id, to: net.id })
-            })
-            sgs.forEach(sg => {
-              edges.push({ from: srv.id, to: sg.id })
-            })
-          })
-
-          lbs.forEach(lb => {
-            nets.forEach(net => {
-              edges.push({ from: lb.id, to: net.id })
+          resources.forEach((r: any) => {
+            const currentId = r.logical_resource_id || r.resource_name
+            const dependents = r.required_by || []
+            dependents.forEach((depId: string) => {
+              // 'required_by' means depId depends on currentId.
+              // We draw a directed edge from currentId (dependency) to depId (dependent)
+              edges.push({ from: currentId, to: depId })
             })
           })
 

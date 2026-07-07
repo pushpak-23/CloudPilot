@@ -132,60 +132,33 @@ function initNetwork() {
     networkInstance = null
   }
 
-  // Central Root Node for the Stack (Horizon Style)
-  const nodesList = [
-    {
-      id: 'stack-root',
-      label: props.stackName || 'Heat Stack',
-      shape: 'image',
-      image: getBadgeIcon('stack'),
-      font: {
-        color: '#f59e0b', // gold text
-        size: 13,
-        face: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-        vadjust: -8,
-      },
+  // List only the actual Heat resource nodes (Horizon Style)
+  const nodesList = (props.topology.nodes || []).map((node) => ({
+    id: node.id,
+    label: node.label,
+    shape: 'image',
+    image: getBadgeIcon(node.type),
+    font: {
+      color: '#e4e4e7', // zinc-200
+      size: 11,
+      face: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+      vadjust: -8,
     },
-    // Resource nodes
-    ...(props.topology.nodes || []).map((node) => ({
-      id: node.id,
-      label: node.label,
-      shape: 'image',
-      image: getBadgeIcon(node.type),
-      font: {
-        color: '#e4e4e7', // zinc-200
-        size: 10,
-        face: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-        vadjust: -8,
-      },
-    })),
-  ]
+  }))
 
-  // Link everything back to the root Stack node, and add internal links
-  const edgesList = [
-    // Root link edges (Gold)
-    ...(props.topology.nodes || []).map((node) => ({
-      from: 'stack-root',
-      to: node.id,
-      color: {
-        color: 'rgba(245, 158, 11, 0.25)', // light gold/amber edge
-        highlight: '#f59e0b',
-      },
-      width: 1.5,
-      arrows: { to: { enabled: false } },
-    })),
-    // Resource connections (Blue/Zinc)
-    ...(props.topology.edges || []).map((edge) => ({
-      from: edge.from,
-      to: edge.to,
-      color: {
-        color: 'rgba(63, 63, 70, 0.5)', // zinc-700
-        highlight: '#3b82f6', // blue-500
-      },
-      width: 1.2,
-      arrows: { to: { enabled: false } },
-    })),
-  ]
+  // Draw directed dependency arrow links representing the HOT template relationships
+  const edgesList = (props.topology.edges || []).map((edge) => ({
+    from: edge.from,
+    to: edge.to,
+    color: {
+      color: 'rgba(59, 130, 246, 0.45)', // blue link lines with opacity
+      highlight: '#3b82f6', // blue-500
+    },
+    width: 2,
+    arrows: {
+      to: { enabled: true, type: 'arrow', scaleFactor: 0.8 }
+    },
+  }))
 
   const data = {
     nodes: nodesList,
