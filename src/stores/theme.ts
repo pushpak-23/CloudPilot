@@ -75,6 +75,7 @@ export const useThemeStore = defineStore('theme', {
 
     toggleThemeMode() {
       this.isDarkMode = !this.isDarkMode
+      this.triggerWipeEffect()
       this.applyThemeMode()
       localStorage.setItem('cp_theme_mode', this.isDarkMode ? 'dark' : 'light')
     },
@@ -92,6 +93,7 @@ export const useThemeStore = defineStore('theme', {
 
     setThemeStyle(style: 'standard' | 'cyberpunk') {
       this.themeStyle = style
+      this.triggerWipeEffect()
       this.applyThemeStyle()
       localStorage.setItem('cp_theme_style', style)
     },
@@ -100,6 +102,17 @@ export const useThemeStore = defineStore('theme', {
       const root = document.documentElement
       root.classList.remove('theme-standard', 'theme-cyberpunk')
       root.classList.add(`theme-${this.themeStyle}`)
+    },
+
+    triggerWipeEffect() {
+      const root = document.documentElement
+      root.classList.remove('theme-wipe-active')
+      // force repaint reflow
+      void root.offsetWidth
+      root.classList.add('theme-wipe-active')
+      setTimeout(() => {
+        root.classList.remove('theme-wipe-active')
+      }, 600)
     },
 
     /** Call once on app startup to restore persisted theme */
