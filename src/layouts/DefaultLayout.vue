@@ -12,8 +12,39 @@
     >
       <AppHeader />
 
-      <main class="flex-1 overflow-auto bg-zinc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/20 via-zinc-950 to-zinc-950">
-        <RouterView />
+      <main class="flex-1 overflow-auto relative bg-zinc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/20 via-zinc-950 to-zinc-950">
+        <!-- Floating abstract color blobs (GPU accelerated background animation) -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none">
+          <div 
+            class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[130px] animate-blob transition-all duration-1000"
+            :class="[
+              themeStore.themeStyle === 'cyberpunk' 
+                ? 'bg-pink-500/15' 
+                : (themeStore.isDarkMode ? 'bg-blue-600/10' : 'bg-blue-400/10')
+            ]"
+          ></div>
+          <div 
+            class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[130px] animate-blob animation-delay-2000 transition-all duration-1000"
+            :class="[
+              themeStore.themeStyle === 'cyberpunk' 
+                ? 'bg-purple-600/15' 
+                : (themeStore.isDarkMode ? 'bg-purple-600/10' : 'bg-purple-400/8')
+            ]"
+          ></div>
+          <div 
+            class="absolute top-[35%] left-[25%] w-[400px] h-[400px] rounded-full blur-[130px] animate-blob animation-delay-4000 transition-all duration-1000"
+            :class="[
+              themeStore.themeStyle === 'cyberpunk' 
+                ? 'bg-cyan-500/10' 
+                : (themeStore.isDarkMode ? 'bg-indigo-600/5' : 'bg-indigo-400/6')
+            ]"
+          ></div>
+        </div>
+
+        <!-- Page contents container -->
+        <div class="relative z-10">
+          <RouterView />
+        </div>
       </main>
 
       <AppFooter />
