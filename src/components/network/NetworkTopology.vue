@@ -65,38 +65,7 @@ let visNetworkInstance: Network | null = null
 const currentNodes = ref<any[]>([])
 const isUnmounted = ref(false)
 
-// SVG Icon Generator (Glassmorphism design with glowing borders)
-const generateCircularBadge = (
-  gradientStart: string,
-  gradientEnd: string,
-  borderColor: string,
-  iconContent: string,
-  highlighted: boolean = false
-) => {
-  const strokeWidth = highlighted ? 5.5 : 2.5
-  const glowDeviation = highlighted ? 9 : 4
-  const glowOpacity = highlighted ? 0.95 : 0.4
-  const radius = highlighted ? 34 : 32
-
-  const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">
-  <defs>
-    <linearGradient id="parentBadgeGrad_${borderColor.replace('#', '')}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:${gradientStart};stop-opacity:1" />
-      <stop offset="100%" style="stop-color:${gradientEnd};stop-opacity:1" />
-    </linearGradient>
-    <filter id="parentBadgeShadow_${borderColor.replace('#', '')}" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="5" stdDeviation="${glowDeviation}" flood-color="${highlighted ? borderColor : '#000000'}" flood-opacity="${glowOpacity}"/>
-    </filter>
-  </defs>
-  <circle cx="44" cy="44" r="${radius}" fill="url(#parentBadgeGrad_${borderColor.replace('#', '')})" stroke="${borderColor}" stroke-width="${strokeWidth}" filter="url(#parentBadgeShadow_${borderColor.replace('#', '')})" />
-  <g transform="translate(28, 28)">
-    ${iconContent}
-  </g>
-</svg>
-`
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg.trim())}`
-}
+import { generateCircularBadge } from '@/shared/badges'
 
 const getGlobeSvg = (highlighted: boolean = false) => generateCircularBadge(
   '#1e3a8a', '#0284c7', '#06b6d4',

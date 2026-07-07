@@ -211,38 +211,8 @@ watch(() => props.show, (newVal) => {
   }
 })
 
-// Vector Badge SVG Icon Generators (Circular Glassmorphism Look with glowing borders)
-const generateCircularBadge = (
-  gradientStart: string,
-  gradientEnd: string,
-  borderColor: string,
-  iconContent: string,
-  highlighted: boolean = false
-) => {
-  const strokeWidth = highlighted ? 5.5 : 2.5
-  const glowDeviation = highlighted ? 9 : 4
-  const glowOpacity = highlighted ? 0.95 : 0.4
-  const radius = highlighted ? 34 : 32
-  
-  const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">
-  <defs>
-    <linearGradient id="routerBadgeGrad_${borderColor.replace('#', '')}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:${gradientStart};stop-opacity:1" />
-      <stop offset="100%" style="stop-color:${gradientEnd};stop-opacity:1" />
-    </linearGradient>
-    <filter id="routerBadgeShadow_${borderColor.replace('#', '')}" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="5" stdDeviation="${glowDeviation}" flood-color="${highlighted ? borderColor : '#000000'}" flood-opacity="${glowOpacity}"/>
-    </filter>
-  </defs>
-  <circle cx="44" cy="44" r="${radius}" fill="url(#routerBadgeGrad_${borderColor.replace('#', '')})" stroke="${borderColor}" stroke-width="${strokeWidth}" filter="url(#routerBadgeShadow_${borderColor.replace('#', '')})" />
-  <g transform="translate(28, 28)">
-    ${iconContent}
-  </g>
-</svg>
-`
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg.trim())}`
-}
+// Import shared badge generator
+import { generateCircularBadge } from '@/shared/badges'
 
 async function submitCreateRouter() {
   if (!newRouterName.value.trim()) return
