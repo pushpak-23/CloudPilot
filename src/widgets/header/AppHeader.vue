@@ -127,6 +127,16 @@
         <SettingsIcon :size="19" />
       </RouterLink>
 
+      <!-- Dark/Light Theme Mode Toggle -->
+      <button
+        @click="themeStore.toggleThemeMode()"
+        class="p-2 hover:bg-zinc-900 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-pointer"
+        :title="themeStore.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      >
+        <Sun v-if="themeStore.isDarkMode" :size="19" />
+        <Moon v-else :size="19" />
+      </button>
+
       <!-- User Profile & Context Dropdown -->
       <div class="relative">
         <button
@@ -209,7 +219,9 @@ import {
   ChevronDown,
   Check,
   Globe,
-  FolderKanban
+  FolderKanban,
+  Sun,
+  Moon
 } from 'lucide-vue-next'
 import { useLayoutStore } from '@/stores/layout'
 import { useAuthStore } from '@/stores/auth'

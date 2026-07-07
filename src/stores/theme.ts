@@ -29,6 +29,7 @@ function applyThemeToDOM(preset: ThemePreset) {
 export const useThemeStore = defineStore('theme', {
   state: () => ({
     activeTheme: 'blue' as string,
+    isDarkMode: true as boolean,
   }),
 
   getters: {
@@ -71,13 +72,40 @@ export const useThemeStore = defineStore('theme', {
       localStorage.setItem(STORAGE_KEY, name)
     },
 
+    toggleThemeMode() {
+      this.isDarkMode = !this.isDarkMode
+      this.applyThemeMode()
+      localStorage.setItem('cp_theme_mode', this.isDarkMode ? 'dark' : 'light')
+    },
+
+    applyThemeMode() {
+      const root = document.documentElement
+      if (this.isDarkMode) {
+        root.classList.remove('light')
+        root.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+        root.classList.add('light')
+      }
+    },
+
     /** Call once on app startup to restore persisted theme */
     initTheme() {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved && themePresets.find(p => p.name === saved)) {
-        this.activeTheme = saved
+      // Restore accent theme color
+      const savedAccent = localStorage.getItem(STORAGE_KEY)
+      if (savedAccent && themePresets.find(p => p.name === savedAccent)) {
+        this.activeTheme = savedAccent
       }
       applyThemeToDOM(this.currentPreset)
+
+      // Restore dark/light theme mode
+      const savedMode = localStorage.getItem('cp_theme_mode')
+      if (savedMode) {
+        this.isDarkMode = savedMode === 'dark'
+      } else {
+        this.isDarkMode = true
+      }
+      this.applyThemeMode()
     },
   },
 })

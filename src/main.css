@@ -1,27 +1,66 @@
 @import 'tailwindcss';
 
-@theme {
-  --color-background: #09090b;
-  --color-card: #18181b;
-  --color-sidebar: #111827;
-  --color-primary: #2563eb;
+/* ── Light/Dark Mode Variables ───────────────────────────────────── */
+:root {
+  --bg-app: #09090b;
+  --bg-card: #18181b;
+  --bg-sidebar: #0f0f11;
+  --bg-deep: #09090b;
+  --color-border: #27272a;
+  --color-border-subtle: #18181b;
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
+  --text-secondary: #d4d4d8;
+  --card-glass-bg: rgba(9, 9, 11, 0.4);
+  --color-zinc-700-val: #3f3f46;
+}
 
-  --color-brand-primary: #2563eb;
-  --color-brand-primary-hover: #3b82f6;
-  --color-brand-secondary: #09090b;
-  --color-brand-secondary-hover: #18181b;
+html.light {
+  --bg-app: #f4f4f5;
+  --bg-card: #ffffff;
+  --bg-sidebar: #f8fafc;
+  --bg-deep: #e4e4e7;
+  --color-border: #e4e4e7;
+  --color-border-subtle: #f4f4f5;
+  --text-main: #09090b;
+  --text-muted: #71717a;
+  --text-secondary: #27272a;
+  --card-glass-bg: rgba(255, 255, 255, 0.75);
+  --color-zinc-700-val: #d4d4d8;
+}
+
+@theme {
+  --color-background: var(--bg-app);
+  --color-card: var(--bg-card);
+  --color-sidebar: var(--bg-sidebar);
+  --color-primary: var(--accent);
+
+  --color-brand-primary: var(--accent);
+  --color-brand-primary-hover: var(--accent-hover);
+  --color-brand-secondary: var(--bg-card);
+  --color-brand-secondary-hover: var(--bg-deep);
 
   --color-status-active-bg: rgba(16, 185, 129, 0.1);
-  --color-status-active-text: #34d399;
+  --color-status-active-text: #10b981;
   --color-status-active-border: rgba(16, 185, 129, 0.2);
 
   --color-status-inactive-bg: rgba(113, 113, 122, 0.1);
-  --color-status-inactive-text: #a1a1aa;
+  --color-status-inactive-text: var(--text-muted);
   --color-status-inactive-border: rgba(113, 113, 122, 0.2);
 
   --color-status-danger-bg: rgba(239, 68, 68, 0.1);
-  --color-status-danger-text: #f87171;
+  --color-status-danger-text: #ef4444;
   --color-status-danger-border: rgba(239, 68, 68, 0.2);
+
+  /* Overwrite Tailwind's global zinc variables to support dark/light dynamics */
+  --color-zinc-950: var(--bg-deep);
+  --color-zinc-900: var(--bg-card);
+  --color-zinc-800: var(--color-border);
+  --color-zinc-850: var(--color-border-subtle);
+  --color-zinc-700: var(--color-zinc-700-val);
+  --color-zinc-400: var(--text-muted);
+  --color-zinc-300: var(--text-secondary);
+  --color-white: var(--text-main);
 }
 
 /* ── Accent Theme Custom Properties ────────────────────────────── */
@@ -38,8 +77,8 @@
 }
 
 @utility card-glass {
-  background-color: rgba(9, 9, 11, 0.4);
-  border: 1px solid #27272a;
+  background-color: var(--card-glass-bg);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   padding: 1.5rem;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -73,8 +112,8 @@
 
 @utility btn-secondary {
   background-color: var(--color-brand-secondary);
-  border: 1px solid #27272a;
-  color: #e4e4e7;
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
   font-weight: 600;
   padding: 0.625rem 1.125rem;
   border-radius: 0.5rem;
@@ -86,9 +125,9 @@
   cursor: pointer;
   
   &:hover {
-    border-color: #52525b;
+    border-color: var(--text-muted);
     background-color: var(--color-brand-secondary-hover);
-    color: #ffffff;
+    color: var(--text-main);
   }
   
   &:disabled {
@@ -102,16 +141,16 @@
   font-size: 0.75rem;
   padding: 0.375rem 0.625rem;
   border-radius: 0.375rem;
-  border: 1px solid #27272a;
-  background-color: #18181b;
-  color: #d4d4d8;
+  border: 1px solid var(--color-border);
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
   transition: all 0.15s;
   cursor: pointer;
   
   &:hover {
-    background-color: #27272a;
-    color: #ffffff;
-    border-color: #3f3f46;
+    background-color: var(--bg-deep);
+    color: var(--text-main);
+    border-color: var(--color-border);
   }
   
   &:disabled {
@@ -144,12 +183,12 @@
 
 @utility form-input {
   width: 100%;
-  background-color: #09090b;
-  border: 1px solid #27272a;
+  background-color: var(--bg-deep);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: #ffffff;
+  color: var(--text-main);
   outline: none;
   transition: all 0.15s;
   
@@ -159,7 +198,7 @@
   }
   
   &::placeholder {
-    color: #3f3f46;
+    color: var(--text-muted);
   }
   
   &:disabled {
@@ -197,7 +236,6 @@
   border-color: var(--color-status-danger-border);
 }
 
-html,
 body,
 #app {
   width: 100%;
@@ -207,8 +245,9 @@ body,
 
 body {
   background: var(--color-background);
-  color: white;
+  color: var(--text-main);
   font-family: Inter, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Global dropdown selector style overrides for dark mode */
@@ -222,8 +261,8 @@ select {
 }
 
 select, option {
-  background-color: #09090b !important;
-  color: #ffffff !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
 }
 
 select:focus {
@@ -233,7 +272,7 @@ select:focus {
 /* ── Custom Theme-Aware Scrollbar Styles ────────────────────────── */
 * {
   scrollbar-width: thin;
-  scrollbar-color: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.25) #09090b;
+  scrollbar-color: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.25) var(--bg-app);
 }
 
 ::-webkit-scrollbar {
@@ -242,7 +281,7 @@ select:focus {
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: var(--bg-app);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -271,9 +310,9 @@ select:focus {
   -webkit-appearance: none;
   width: 1.05rem;
   height: 1.05rem;
-  border: 1.5px solid #3f3f46; /* border-zinc-700 */
+  border: 1.5px solid var(--color-border);
   border-radius: 0.3rem;
-  background-color: #09090b; /* bg-zinc-950 */
+  background-color: var(--bg-deep);
   display: inline-grid;
   place-content: center;
   cursor: pointer;
@@ -307,10 +346,6 @@ select:focus {
   transform: scale(1);
 }
 
-/* Disable transition on table rows to prevent browser compositor repaint/flashing on hover */
 tr {
   transition: none !important;
 }
-
-
-
