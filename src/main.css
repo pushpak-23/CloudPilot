@@ -29,6 +29,40 @@ html.light {
   --color-zinc-700-val: #94a3b8; /* Slate-400 borders */
 }
 
+html.theme-cyberpunk {
+  --bg-app: #030009;
+  --bg-card: #090518;
+  --bg-sidebar: #04010a;
+  --bg-deep: #020005;
+  --color-border: #ff007f;       /* Glowing Neon Pink */
+  --color-border-subtle: #8a008a; /* Glowing Purple */
+  --text-main: #00f0ff;          /* Glowing Neon Cyan */
+  --text-muted: #d946ef;         /* Neon Magenta */
+  --text-secondary: #00e0e0;
+  --card-glass-bg: rgba(9, 5, 24, 0.7);
+  --color-zinc-700-val: #ff007f;
+}
+
+/* ── Cyberpunk Neon Skin Structural Layout Overrides ──────────────── */
+html.theme-cyberpunk main {
+  background: #030009 !important;
+  background-image: 
+    linear-gradient(rgba(217, 70, 239, 0.08) 1px, transparent 0),
+    linear-gradient(90deg, rgba(217, 70, 239, 0.08) 1px, transparent 0) !important;
+  background-size: 30px 30px !important;
+}
+
+html.theme-cyberpunk .bg-zinc-900,
+html.theme-cyberpunk .bg-zinc-950,
+html.theme-cyberpunk .card-glass {
+  box-shadow: 0 0 16px rgba(255, 0, 127, 0.16) !important;
+}
+
+html.theme-cyberpunk header,
+html.theme-cyberpunk aside {
+  border-color: rgba(255, 0, 127, 0.25) !important;
+}
+
 @theme {
   --color-background: var(--bg-app);
   --color-card: var(--bg-card);

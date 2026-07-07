@@ -30,6 +30,7 @@ export const useThemeStore = defineStore('theme', {
   state: () => ({
     activeTheme: 'blue' as string,
     isDarkMode: true as boolean,
+    themeStyle: 'standard' as 'standard' | 'cyberpunk',
   }),
 
   getters: {
@@ -89,6 +90,18 @@ export const useThemeStore = defineStore('theme', {
       }
     },
 
+    setThemeStyle(style: 'standard' | 'cyberpunk') {
+      this.themeStyle = style
+      this.applyThemeStyle()
+      localStorage.setItem('cp_theme_style', style)
+    },
+
+    applyThemeStyle() {
+      const root = document.documentElement
+      root.classList.remove('theme-standard', 'theme-cyberpunk')
+      root.classList.add(`theme-${this.themeStyle}`)
+    },
+
     /** Call once on app startup to restore persisted theme */
     initTheme() {
       // Restore accent theme color
@@ -106,6 +119,15 @@ export const useThemeStore = defineStore('theme', {
         this.isDarkMode = true
       }
       this.applyThemeMode()
+
+      // Restore full UI structural skin/theme
+      const savedStyle = localStorage.getItem('cp_theme_style')
+      if (savedStyle === 'cyberpunk') {
+        this.themeStyle = 'cyberpunk'
+      } else {
+        this.themeStyle = 'standard'
+      }
+      this.applyThemeStyle()
     },
   },
 })

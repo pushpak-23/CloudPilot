@@ -54,6 +54,31 @@
               </span>
             </button>
           </div>
+          
+          <hr class="border-zinc-800 my-4" />
+          
+          <div class="space-y-3">
+            <div class="text-sm font-medium text-white">System UI Theme Type</div>
+            <p class="text-xs text-zinc-500">Choose a structural theme style. Switching styles modifies background grid designs, box shadow glows, and base color tones.</p>
+            <div class="flex gap-4 pt-1 select-none">
+              <button
+                @click="themeStore.setThemeStyle('standard')"
+                class="flex-1 max-w-[200px] p-4 rounded-xl border text-left cursor-pointer transition-all duration-200"
+                :class="themeStore.themeStyle === 'standard' ? 'bg-zinc-900 border-blue-500 shadow-md' : 'bg-zinc-900/10 border-zinc-800 hover:border-zinc-700'"
+              >
+                <div class="font-bold text-xs text-white">Standard Obsidian</div>
+                <div class="text-[10px] text-zinc-500 mt-1 leading-normal">Premium glassmorphic dashboard with dark ambient elements.</div>
+              </button>
+              <button
+                @click="themeStore.setThemeStyle('cyberpunk')"
+                class="flex-1 max-w-[200px] p-4 rounded-xl border text-left cursor-pointer transition-all duration-200"
+                :class="themeStore.themeStyle === 'cyberpunk' ? 'bg-zinc-900 border-pink-500 shadow-md shadow-pink-500/10' : 'bg-zinc-900/10 border-zinc-800 hover:border-zinc-700'"
+              >
+                <div class="font-bold text-xs text-pink-400">Cyberpunk Neon</div>
+                <div class="text-[10px] text-zinc-500 mt-1 leading-normal">Futuristic matrix grid background, neon pink borders, and glowing cyan details.</div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
