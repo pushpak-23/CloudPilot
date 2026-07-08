@@ -17,7 +17,7 @@
         <div class="scanline-beam"></div>
 
         <!-- Floating abstract color blobs (GPU accelerated background animation) -->
-        <div class="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none select-none">
           <div 
             class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[130px] animate-blob transition-all duration-1000"
             :class="[
@@ -45,7 +45,7 @@
         </div>
 
         <!-- Page contents container -->
-        <div class="relative z-10">
+        <div class="relative">
           <RouterView />
         </div>
       </main>
